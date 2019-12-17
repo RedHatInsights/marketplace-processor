@@ -1,6 +1,5 @@
 [![GitHub license](https://img.shields.io/github/license/RedHatInsights/marketplace-processor.svg)](https://github.com/RedHatInsights/marketplace-processor/blob/master/LICENSE)
 [![Code Coverage](https://codecov.io/gh/RedHatInsights/marketplace-processor/branch/master/graph/badge.svg)](https://codecov.io/gh/RedHatInsights/marketplace-processor)
-[![Documentation Status](https://readthedocs.org/projects/marketplace-processor/badge/)](https://marketplace-processor.readthedocs.io/en/latest/)
 [![Updates](https://pyup.io/repos/github/RedHatInsights/marketplace-processor/shield.svg)](https://pyup.io/repos/github/RedHatInsights/marketplace-processor/)
 [![Python 3](https://pyup.io/repos/github/RedHatInsights/marketplace-processor/python-3-shield.svg)](https://pyup.io/repos/github/RedHatInsights/marketplace-processor/)
 
