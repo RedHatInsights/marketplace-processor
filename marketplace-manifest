@@ -1,12 +1,12 @@
 mgmt_services/marketplace:processor/python-aiokafka:0.5.2.pipfile
-mgmt_services/marketplace:processor/python-boto3:1.10.34.pipfile
-mgmt_services/marketplace:processor/python-botocore:1.13.38.pipfile
+mgmt_services/marketplace:processor/python-boto3:1.10.40.pipfile
+mgmt_services/marketplace:processor/python-botocore:1.13.41.pipfile
 mgmt_services/marketplace:processor/python-certifi:2019.11.28.pipfile
 mgmt_services/marketplace:processor/python-chardet:3.0.4.pipfile
 mgmt_services/marketplace:processor/python-django:2.2.8.pipfile
 mgmt_services/marketplace:processor/python-django-environ:0.4.5.pipfile
 mgmt_services/marketplace:processor/python-django-prometheus:1.1.0.pipfile
-mgmt_services/marketplace:processor/python-djangorestframework:3.10.3.pipfile
+mgmt_services/marketplace:processor/python-djangorestframework:3.11.0.pipfile
 mgmt_services/marketplace:processor/python-docutils:0.15.2.pipfile
 mgmt_services/marketplace:processor/python-gunicorn:20.0.4.pipfile
 mgmt_services/marketplace:processor/python-idna:2.8.pipfile
@@ -22,4 +22,4 @@ mgmt_services/marketplace:processor/python-six:1.13.0.pipfile
 mgmt_services/marketplace:processor/python-sqlparse:0.3.0.pipfile
 mgmt_services/marketplace:processor/python-urllib3:1.25.7.pipfile
 mgmt_services/marketplace:processor/python-watchtower:0.7.3.pipfile
-mgmt_services/marketplace:processor/python-whitenoise:4.1.4.pipfile
+mgmt_services/marketplace:processor/python-whitenoise:5.0.1.pipfile
