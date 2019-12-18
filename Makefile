@@ -63,6 +63,7 @@ help:
 	@echo "local-dev-down                              bring down marketplace with all required services"
 	@echo "sample-data                                 ready sample data for upload to the ingress service"
 	@echo "local-upload-data file=<path/to/file>       upload data to local ingress service for marketplace processing"
+	@echo "upload-data file=<path/to/file>       	   upload data to ingress service for marketplace processing"
 	@echo ""
 
 clean:
@@ -146,6 +147,11 @@ sample-data:
 	echo ""; \
 	rm -rf reports; \
 	rm -rf old_reports_temp
+
+upload-data:
+	curl -vvvv -F "file=@$(file);type=application/vnd.redhat.mkt.tar+tgz" \
+		$(INGRESS_URL) \
+		-u $(RH_USERNAME):$(RH_PASSWORD)
 
 manifest:
 	python scripts/create_manifest.py

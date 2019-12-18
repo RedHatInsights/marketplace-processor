@@ -162,8 +162,6 @@ Data being uploaded to the Platform must be in `tar.gz` format containing the `.
 ## Uploading Data
 After preparing the data with new UUIDs through either of the above steps, you can upload it to Insights.  Additionally, you must export the following required information as environment variables or add them to your `.env` file.  See `.env.external.example`.
 ```
-RH_ACCOUNT_NUMBER=<your-account-number>
-RH_ORG_ID=<your-org-id>
 INGRESS_URL=<ingress-url>
 RH_USERNAME=<your-username>
 RH_PASSWORD=<your-password>
