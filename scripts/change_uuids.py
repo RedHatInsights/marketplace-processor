@@ -35,6 +35,7 @@ def change_uuids():
     with open(metadata, 'r') as f:
         data = json.load(f)
         data['report_id'] = new_uuid # modify the report_id
+        data['source'] = str(uuid.uuid4())
         data['report_slices'] = new_slices
     with open('temp/reports/metadata.json', 'w') as f:
         json.dump(data, f, indent=4)
