@@ -433,7 +433,7 @@ class ReportProcessorTests(TransactionTestCase):
         metadata_json = {
             'report_id': '5f2cc1fd-ec66-4c67-be1b-171a595ce319',
             'source': str(uuid.uuid4()),
-            'report_slices': {str(self.uuid): True}
+            'report_slices': {str(self.uuid): {}}
         }
         report_json = {
             'report_slice_id': str(self.uuid),
@@ -653,7 +653,7 @@ class ReportProcessorTests(TransactionTestCase):
             'report_id': 1,
             'source': source_uuid,
             'source_metadata': {'foo': 'bar'},
-            'report_slices': {str(self.uuid): True}
+            'report_slices': {str(self.uuid): {}}
         }
         report_json = {
             'report_slice_id': str(self.uuid)}
@@ -714,7 +714,7 @@ class ReportProcessorTests(TransactionTestCase):
             'report_id': 1,
             'source': str(uuid.uuid4()),
             'source_metadata': {'foo': 'bar'},
-            'report_slices': {str(self.uuid): True}
+            'report_slices': {str(self.uuid): {}}
         }
         report_json = 'myfakeencodedstring'
         report_files = {
@@ -747,7 +747,7 @@ class ReportProcessorTests(TransactionTestCase):
         metadata_json = {
             'source': source_uuid,
             'report_id': '5f2cc1fd-ec66-4c67-be1b-171a595ce319',
-            'report_slices': {str(self.uuid): True}
+            'report_slices': {str(self.uuid): {}}
         }
         report_json = {
             'report_slice_id': str(self.uuid)}
@@ -772,7 +772,7 @@ class ReportProcessorTests(TransactionTestCase):
             'report_id': 1,
             'report_type': 'insights',
             'report_platform_id': '5f2cc1fd-ec66-4c67-be1b-171a595ce319',
-            'report_slices': {str(self.uuid): True}
+            'report_slices': {str(self.uuid): {}}
         }
         report_files = {
             'metadata.json': metadata_json
@@ -787,7 +787,7 @@ class ReportProcessorTests(TransactionTestCase):
             'report_id': 1,
             'report_type': 'deployments',
             'report_platform_id': '5f2cc1fd-ec66-4c67-be1b-171a595ce319',
-            'report_slices': {str(self.uuid): True}
+            'report_slices': {str(self.uuid): {}}
         }
         report_json = {
             'report_slice_id': str(self.uuid),
@@ -817,7 +817,7 @@ class ReportProcessorTests(TransactionTestCase):
         metadata_json = {
             'report_id': '5f2cc1fd-ec66-4c67-be1b-171a595ce319',
             'source': str(uuid.uuid4()),
-            'report_slices': {'2345322': True}
+            'report_slices': {'2345322': {}}
         }
         report_json = 'This is not JSON.'
         report_files = {
@@ -833,7 +833,7 @@ class ReportProcessorTests(TransactionTestCase):
         metadata_json = {
             'report_id': '5f2cc1fd-ec66-4c67-be1b-171a595ce319',
             'source': str(uuid.uuid4()),
-            'report_slices': {'2345322': True}
+            'report_slices': {'2345322': {}}
         }
         report_json = None
         report_files = {
@@ -864,7 +864,7 @@ class ReportProcessorTests(TransactionTestCase):
             'report_id': 1,
             'report_type': 'insights',
             'report_platform_id': '5f2cc1fd-ec66-4c67-be1b-171a595ce319',
-            'report_slices': {'2345322': True}
+            'report_slices': {'2345322': {}}
         }
         report_json = {
             'report_slice_id': '2345322',

@@ -23,7 +23,7 @@ def change_uuids():
         new_file = os.path.join(os.getcwd()+'/temp/reports', new_name)
         with open(new_file, 'w') as f:
             json.dump(data, f, indent=4)
-        new_slices[new_uuid] = {'number_hosts': len(data['hosts'])} # used for metadata
+        new_slices[new_uuid] = {'number_hosts': len(data['metrics'])} # used for metadata
     
     # change uuid for metadata.json
     metadata = ''
