@@ -81,6 +81,28 @@ insightsingressgo_zookeeper_1
 insightsingressgo_minio_1
 ```
 
+### Sending data to local marketplace-processor
+To send the sample data, run the following commands:
+1. Prepare the sample for sending
+    ```
+    make sample-data
+    ```
+
+2. Locate the temp file name.  You will see a message like the following:
+    ```
+    The updated report was written to temp/sample_data_ready_1561410754.tar.gz
+    ```
+3. Send the temp file to your local marketplace-processor.  Copy the name of this file to the upload command as shown below:
+    ```
+    make local-upload-data file=temp/sample_data_ready_1561410754.tar.gz
+    ```
+4. Watch the kafka consumer for a message to arrive.  You will see something like this in the consumer iTerm.
+    ```
+    {"account": "12345", "rh_account": "12345", "principal": "54321", "request_id": "52df9f748eabcfea", "payload_id": "52df9f748eabcfea", "size": 1132, "service": "qpc", "category": "tar", "b64_identity": "eyJpZGVudGl0eSI6IHsiYWNjb3VudF9udW1iZXIiOiAiMTIzNDUiLCAiaW50ZXJuYWwiOiB7Im9yZ19pZCI6ICI1NDMyMSJ9fX0=", "url": "http://minio:9000/insights-upload-perm-test/52df9f748eabcfea?AWSAccessKeyId=BQA2GEXO711FVBVXDWKM&Signature=WEgFnnKzUTsSJsQ5ouiq9HZG5pI%3D&Expires=1561586445"}
+    ```
+
+5. Look at the marketplace-processor logs to follow the report processing to completion.
+
 
 ### Bringing down marketplace-processor and all services
 To bring down all services run:
@@ -131,11 +153,11 @@ Below is a description of how to create data formatted for the marketplace-proce
 Marketplace Processor retrieves data from the Platform Ingress service.  Marketplace Processor requires a specially formatted tar.gz file.  Files that do not conform to the required format will be marked as invalid and no processing will occur.  The tar.gz file must contain a metadata JSON file and one or more report slice JSON files. The file that contains metadata information is named `metadata.json`, while the files containing host data are named with their uniquely generated UUID4 `report_slice_id` followed by the .json extension. You can download [sample.tar.gz](https://github.com/RedHatInsights/marketplace-processor/raw/master/sample.tar.gz) to view an example.
 
 ## Marketplace Processor Meta-data JSON Format
-Metadata should include information about the sender of the data, Host Inventory API version, and the report slices included in the tar.gz file. Below is a sample metadata section for a report with 2 slices:
+Metadata should include information about the sender of the data and the report slices included in the tar.gz file. Below is a sample metadata section for a report with 2 slices:
 ```
 {
     "report_id": "05f373dd-e20e-4866-b2a4-9b523acfeb6d",
-    "source": "Marketplace Processor",
+    "source": "f75a249f-1a46-450e-8af1-c3bbb2e75edc",  # Cluster ID
     "source_metadata": {
         "any_cluster_info_you_want": "some stuff that will not be validated but will be logged"
     },
@@ -143,14 +165,11 @@ Metadata should include information about the sender of the data, Host Inventory
         "2dd60c11-ee5b-4ddc-8b75-d8d34de86a34": {
             "number_metrics": 1
         },
-        "eb45725b-165a-44d9-ad28-c531e3a1d9ac": {
-            "number_metrics": 1
-        }
+        "eb45725b-165a-44d9-ad28-c531e3a1d9ac": null
     }
 }
 ```
 
-An API specification of the metadata can be found in [metadata.yml](https://github.com/RedHatInsights/marketplace-processor/blob/master/docs/metadata.yml).
 
 ## Marketplace Processor Report Slice JSON Format
 Report slices are a slice format is TBD.
@@ -195,5 +214,5 @@ psql postgres -U postgres -h localhost -p 15432
 To run a local gunicorn server with marketplace-processor do the following:
 ```
 make server-init
-gunicorn config.wsgi -c ./marketplace-processor/config/gunicorn.py --chdir=./marketplace-processor/
+gunicorn config.wsgi -c ./marketplace/config/gunicorn.py --chdir=./marketplace/
 ```
