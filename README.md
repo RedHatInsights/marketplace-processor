@@ -73,8 +73,10 @@ docker ps --format '{{.Names}}'
 ```
 You should see the following services up and running.
 ```
+grafana
 marketplace-processor_db-host-inventory_1
 marketplace-processor_db_1
+prometheus
 insightsingressgo_ingress_1
 insightsingressgo_kafka_1
 insightsingressgo_zookeeper_1
@@ -102,6 +104,20 @@ To send the sample data, run the following commands:
     ```
 
 5. Look at the marketplace-processor logs to follow the report processing to completion.
+
+
+## Prometheus
+You can view the running Prometheus server at [http://localhost:9090](http://localhost:9090). Here, you can execute queries by typing in the name of the metric you want and pressing the `execute` button. You can also view the target that we are monitoring (our metrics endpoint) and the configuration of the Prometheus server.
+
+If you would like to change the configuration of the Prometheus server, you can edit the configuration file found [here](https://github.com/RedHatInsights/marketplace-processor/blob/master/scripts/config/prometheus.yml). For example, if you would like to have a more accurate representation of the metrics, you can change change the scrape interval for the `marketplace` job before bringing the local development services up. Currently we are polling the `/metrics` endpoint every `10s` to mimic the scrape interval used in CI, but you can set this to `1s` for more accurate metrics in development.
+
+## Grafana
+In order to visualize the metrics that we are collecting, log in to Grafana at [http://localhost:3000](http://localhost:3000):
+1. Log in using `admin` as the username and `secret` as the password.
+
+2. Once you are logged in, click on `Create your first data source`, and select `Prometheus`. Leave all of the defaults, but enter `http://docker.for.mac.localhost:9090` into the `URL` field. Scroll down and click `Save & Test`.
+
+3. Now you can import our development dashboard. Click on the `+` in the lefthand toolbar and select `Import`. Next, select `Upload .json file` in the upper right-hand corner. Now, import [dev-grafana.json](https://github.com/RedHatInsights/marketplace-processor/blob/master/grafana/dev-grafana.json). Finally, click `Import` to begin using the yupana dashboard to visualize the data.
 
 
 ### Bringing down marketplace-processor and all services
