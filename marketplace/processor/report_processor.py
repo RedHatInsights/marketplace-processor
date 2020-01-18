@@ -478,11 +478,11 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
 
     # pylint: disable=too-many-branches, too-many-statements
     def _extract_and_create_slices(self, report_tar_gz):  # noqa: C901 (too-complex)
-        """Extract Insights report from tar.gz file.
+        """Extract metrics from tar.gz file.
 
         :param report_tar_gz: A hexstring or BytesIO tarball
             saved in memory with gzip compression.
-        :returns: Insights report as dict
+        :returns: metrics as dict
         """
         self.prefix = 'EXTRACT REPORT FROM TAR'
         try:  # pylint: disable=too-many-nested-blocks

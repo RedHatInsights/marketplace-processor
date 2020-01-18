@@ -16,11 +16,14 @@
 #
 """Report Slice Processor."""
 
-import asyncio
 import json
 import logging
+import os
+import tempfile
 import threading
 
+from minio import Minio
+from minio.error import ResponseError
 from processor.abstract_processor import (AbstractProcessor, FAILED_TO_VALIDATE)
 from processor.processor_utils import (PROCESSOR_INSTANCES,
                                        SLICE_PROCESSING_LOOP,
@@ -29,7 +32,12 @@ from processor.report_consumer import (MKTReportException,)
 
 from api.models import ReportSlice
 from api.serializers import ReportSliceSerializer
-from config.settings.base import (RETRIES_ALLOWED,
+from config.settings.base import (MINIO_ACCESS_KEY,
+                                  MINIO_BUCKET,
+                                  MINIO_ENDPOINT,
+                                  MINIO_SECRET_KEY,
+                                  MINIO_SECURE,
+                                  RETRIES_ALLOWED,
                                   RETRY_TIME)
 
 LOG = logging.getLogger(__name__)
@@ -68,6 +76,7 @@ class ReportSliceProcessor(AbstractProcessor):  # pylint: disable=too-many-insta
         state_metrics = {
             ReportSlice.FAILED_VALIDATION: FAILED_TO_VALIDATE
         }
+        self.minio_client = None
         super().__init__(pre_delegate=self.pre_delegate,
                          state_functions=state_functions,
                          state_metrics=state_metrics,
@@ -76,6 +85,15 @@ class ReportSliceProcessor(AbstractProcessor):  # pylint: disable=too-many-insta
                          object_class=ReportSlice,
                          object_serializer=ReportSliceSerializer
                          )
+
+    def get_minio_client(self):
+        """Create client for handling object store interaction."""
+        if self.minio_client is None and (MINIO_ENDPOINT and MINIO_ACCESS_KEY and MINIO_SECRET_KEY):
+            self.minio_client = Minio(MINIO_ENDPOINT,
+                                      access_key=MINIO_ACCESS_KEY,
+                                      secret_key=MINIO_SECRET_KEY,
+                                      secure=MINIO_SECURE)
+        return self.minio_client
 
     def pre_delegate(self):
         """Call the correct function based on report slice state.
@@ -144,13 +162,62 @@ class ReportSliceProcessor(AbstractProcessor):  # pylint: disable=too-many-insta
     async def _upload_to_object_storage(self):
         """Upload to the metrics to object storage."""
         self.prefix = 'UPLOAD TO METRICS TO OBJECT STORAGE'
+
+        minio_client = self.get_minio_client()
+        if minio_client is None:
+            LOG.error(
+                format_message(
+                    self.prefix,
+                    'Connection to object storage is not configured.',
+                    account_number=self.account_number,
+                    report_platform_id=self.report_platform_id))
+            return
+
+        try:
+            bucket_exists = minio_client.bucket_exists(bucket_name=MINIO_BUCKET)
+        except (ResponseError, Exception) as err:  # pylint: disable=broad-except
+            LOG.error(
+                format_message(
+                    self.prefix,
+                    'Object storage bucket %s is not configured. Error: %s' % (MINIO_BUCKET, err),
+                    account_number=self.account_number,
+                    report_platform_id=self.report_platform_id))
+        if not bucket_exists:
+            LOG.error(
+                format_message(
+                    self.prefix,
+                    'Object storage bucket %s does not exist.' % (MINIO_BUCKET),
+                    account_number=self.account_number,
+                    report_platform_id=self.report_platform_id))
+            return
+
         LOG.info(
             format_message(
                 self.prefix,
                 'Sending %s metrics to object storage.' % (self.report_slice_id),
                 account_number=self.account_number,
                 report_platform_id=self.report_platform_id))
-        await asyncio.sleep(1)
+
+        metric_file = tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False)
+        with metric_file:
+            metric_file.write(self.report_or_slice.report_json)
+
+        cluster_id = self.report_or_slice.source
+        metric_file_name = f'{self.account_number}/{cluster_id}-{self.report_slice_id}.json'
+        try:
+            minio_client.fput_object(bucket_name=MINIO_BUCKET,
+                                     object_name=metric_file_name,
+                                     file_path=metric_file.name)
+        except (ResponseError, Exception) as err:  # pylint: disable=broad-except
+            LOG.error(
+                format_message(
+                    self.prefix,
+                    'Error writing metrics file %s to object storage bucket %s: %s.' % (
+                        metric_file.name, MINIO_BUCKET, err),
+                    account_number=self.account_number,
+                    report_platform_id=self.report_platform_id))
+
+        os.remove(metric_file.name)
 
 
 def asyncio_report_processor_thread(loop):  # pragma: no cover

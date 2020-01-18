@@ -19,6 +19,28 @@ services:
         POSTGRES_DB: insights
       ports:
         - "5432:5432"
+  minio:
+      image: minio/minio
+      command: server /data
+      volumes:
+        - '$MINIO_DATA_DIR:/data:Z'
+        - '$MINIO_CONFIG_DIR:/root/.minio:Z'
+      ports:
+        - 9001:9000
+      environment:
+        - MINIO_ACCESS_KEY=$MINIO_ACCESS_KEY
+        - MINIO_SECRET_KEY=$MINIO_SECRET_KEY
+  createbuckets:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc config host add myminio http://minio:9001 $MINIO_ACCESS_KEY $MINIO_SECRET_KEY;
+      /usr/bin/mc mb myminio/marketplace;
+      /usr/bin/mc policy download myminio/marketplace;
+      exit 0;
+      "
   grafana:
       ports:
           - '3000:3000'

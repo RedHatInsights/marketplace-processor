@@ -12,6 +12,7 @@ mgmt_services/marketplace:processor/python-gunicorn:20.0.4.pipfile
 mgmt_services/marketplace:processor/python-idna:2.8.pipfile
 mgmt_services/marketplace:processor/python-jmespath:0.9.4.pipfile
 mgmt_services/marketplace:processor/python-kafka-python:1.4.6.pipfile
+mgmt_services/marketplace:processor/python-minio:5.0.6.pipfile
 mgmt_services/marketplace:processor/python-prometheus-client:0.7.1.pipfile
 mgmt_services/marketplace:processor/python-psycopg2-binary:2.8.4.pipfile
 mgmt_services/marketplace:processor/python-python-dateutil:2.8.1.pipfile
