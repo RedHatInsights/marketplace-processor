@@ -28,7 +28,7 @@ from processor.abstract_processor import (AbstractProcessor, FAILED_TO_VALIDATE)
 from processor.processor_utils import (PROCESSOR_INSTANCES,
                                        SLICE_PROCESSING_LOOP,
                                        format_message)
-from processor.report_consumer import (MKTReportException,)
+from processor.report_consumer import (MKTReportException, OBJECTSTORE_ERRORS)
 
 from api.models import ReportSlice
 from api.serializers import ReportSliceSerializer
@@ -153,6 +153,7 @@ class ReportSliceProcessor(AbstractProcessor):  # pylint: disable=too-many-insta
             options = {'ready_to_archive': True}
             self.update_object_state(options=options)
         except Exception as error:  # pylint: disable=broad-except
+            OBJECTSTORE_ERRORS.inc()
             LOG.error(format_message(self.prefix, 'The following error occurred: %s.' % str(error),
                                      account_number=self.account_number,
                                      report_platform_id=self.report_platform_id))
@@ -165,31 +166,11 @@ class ReportSliceProcessor(AbstractProcessor):  # pylint: disable=too-many-insta
 
         minio_client = self.get_minio_client()
         if minio_client is None:
-            LOG.error(
-                format_message(
-                    self.prefix,
-                    'Connection to object storage is not configured.',
-                    account_number=self.account_number,
-                    report_platform_id=self.report_platform_id))
-            return
+            raise RetryUploadTimeException('Connection to object storage is not configured.')
 
-        try:
-            bucket_exists = minio_client.bucket_exists(bucket_name=MINIO_BUCKET)
-        except (ResponseError, Exception) as err:  # pylint: disable=broad-except
-            LOG.error(
-                format_message(
-                    self.prefix,
-                    'Object storage bucket %s is not configured. Error: %s' % (MINIO_BUCKET, err),
-                    account_number=self.account_number,
-                    report_platform_id=self.report_platform_id))
+        bucket_exists = minio_client.bucket_exists(bucket_name=MINIO_BUCKET)
         if not bucket_exists:
-            LOG.error(
-                format_message(
-                    self.prefix,
-                    'Object storage bucket %s does not exist.' % (MINIO_BUCKET),
-                    account_number=self.account_number,
-                    report_platform_id=self.report_platform_id))
-            return
+            raise RetryUploadTimeException(f'Object storage bucket {MINIO_BUCKET} does not exist.')
 
         LOG.info(
             format_message(
@@ -209,14 +190,8 @@ class ReportSliceProcessor(AbstractProcessor):  # pylint: disable=too-many-insta
                                      object_name=metric_file_name,
                                      file_path=metric_file.name)
         except (ResponseError, Exception) as err:  # pylint: disable=broad-except
-            LOG.error(
-                format_message(
-                    self.prefix,
-                    'Error writing metrics file %s to object storage bucket %s: %s.' % (
-                        metric_file.name, MINIO_BUCKET, err),
-                    account_number=self.account_number,
-                    report_platform_id=self.report_platform_id))
-
+            os.remove(metric_file.name)
+            raise err
         os.remove(metric_file.name)
 
 
