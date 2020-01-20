@@ -23,7 +23,6 @@ To get started developing against marketplace-processor first clone a local copy
 ```
 git clone https://github.com/RedHatInsights/marketplace-processor
 git clone https://github.com/RedHatInsights/insights-ingress-go
-git clone https://github.com/RedHatInsights/insights-host-inventory.git
 ```
 
 ### Configure environment variables
@@ -74,8 +73,8 @@ docker ps --format '{{.Names}}'
 You should see the following services up and running.
 ```
 grafana
-marketplace-processor_db-host-inventory_1
 marketplace-processor_db_1
+marketplace-processor_minio_1
 prometheus
 insightsingressgo_ingress_1
 insightsingressgo_kafka_1

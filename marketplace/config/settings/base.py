@@ -78,6 +78,13 @@ CW_AWS_SECRET_ACCESS_KEY = ENVIRONMENT.get_value('CW_AWS_SECRET_ACCESS_KEY', def
 CW_AWS_REGION = ENVIRONMENT.get_value('CW_AWS_REGION', default='us-east-1')
 CW_LOG_GROUP = ENVIRONMENT.get_value('CW_LOG_GROUP', default='platform-dev')
 
+# minio variables
+MINIO_ENDPOINT = ENVIRONMENT.get_value('MINIO_ENDPOINT', default=None)
+MINIO_ACCESS_KEY = ENVIRONMENT.get_value('MINIO_ACCESS_KEY', default=None)
+MINIO_SECRET_KEY = ENVIRONMENT.get_value('MINIO_SECRET_KEY', default=None)
+MINIO_SECURE = ENVIRONMENT.bool('MINIO_SECURE', default=True)
+MINIO_BUCKET = ENVIRONMENT.get_value('MINIO_BUCKET', default='open-marketplace')
+
 LOGGING_LEVEL = os.getenv('DJANGO_LOG_LEVEL', 'INFO')
 LOGGING_HANDLERS = os.getenv('DJANGO_LOG_HANDLERS', 'console').split(',')
 LOGGING_FORMATTER = os.getenv('DJANGO_LOG_FORMATTER', 'simple')

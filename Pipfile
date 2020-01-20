@@ -1,12 +1,9 @@
 [[source]]
-
 url = "https://pypi.python.org/simple"
 verify_ssl = true
 name = "pypi"
 
-
 [packages]
-
 aiokafka = "==0.5.2"
 djangorestframework = "==3.11.0"
 Django = "==2.2.9"
@@ -20,10 +17,9 @@ django-prometheus = "==1.1.0"
 prometheus-client = "==0.7.1"
 boto3 = "==1.10.40"
 watchtower = "==0.7.3"
-
+minio = "==5.0.6"
 
 [dev-packages]
-
 asynctest = "==0.13.0"
 autopep8 = "==1.4.4"
 flake8 = "==3.7.9"
@@ -35,7 +31,5 @@ pylint-plugin-utils = "==0.6"
 requests-mock = "==1.7.0"
 tox = "==3.14.2"
 
-
 [requires]
-
 python_version = "3.6"
