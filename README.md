@@ -180,15 +180,30 @@ Metadata should include information about the sender of the data and the report 
         "2dd60c11-ee5b-4ddc-8b75-d8d34de86a34": {
             "number_metrics": 1
         },
-        "eb45725b-165a-44d9-ad28-c531e3a1d9ac": null
+        "eb45725b-165a-44d9-ad28-c531e3a1d9ac": {
+            "number_metrics": 1
+        }
     }
 }
 ```
 
 
 ## Marketplace Processor Report Slice JSON Format
-Report slices are a slice format is TBD.
-
+Report slices are a slice format is as described below containing the slice ID reference and an array of metric objects.
+```
+{
+    "report_slice_id": "2dd60c11-ee5b-4ddc-8b75-d8d34de86a34",
+    "metrics": [{
+        "report_period_start": "2019-12-01 00:00:00 +0000 UTC",
+        "report_period_end": "2020-01-01 00:00:00 +0000 UTC",
+        "interval_start": "2019-12-01 00:00:00 +0000 UTC",
+        "interval_end": "2019-12-01 01:00:00 +0000 UTC",
+        ...
+        },
+        ...
+    ]
+}
+```
 
 # <a name="sending_data"></a> Sending Data to Platform Ingress service for Marketplace Processor
 Data being uploaded to the Platform must be in `tar.gz` format containing the `.json` files with the given JSON structure above. It is important to note that Marketplace Processor processes & tracks reports based on their UUIDS, which means that data with a specific UUID cannot be uploaded more than once, or else the second upload will be archived and not processed. Therefore, before every upload we need to generate a new UUID and replace the current one with it if we want to upload the same data more than once. Use the following instructions to prepare and upload a sample or custom report.
