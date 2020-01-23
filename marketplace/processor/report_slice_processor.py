@@ -45,7 +45,7 @@ LOG = logging.getLogger(__name__)
 FAILED_UPLOAD = 'UPLOAD'
 RETRIES_ALLOWED = int(RETRIES_ALLOWED)
 RETRY_TIME = int(RETRY_TIME)
-UPLOAD_TOPIC = 'platform.inventory.host-ingress'  # placeholder topic
+UPLOAD_TOPIC = 'platform.inventory.host-ingress'
 
 
 class RetryUploadTimeException(Exception):
@@ -180,11 +180,18 @@ class ReportSliceProcessor(AbstractProcessor):  # pylint: disable=too-many-insta
                 report_platform_id=self.report_platform_id))
 
         metric_file = tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False)
-        with metric_file:
-            metric_file.write(self.report_or_slice.report_json)
-
         cluster_id = self.report_or_slice.source
         metric_file_name = f'{self.account_number}/{cluster_id}-{self.report_slice_id}.json'
+        with metric_file:
+            if self.report_json is None:
+                self.report_json = json.loads(self.report_or_slice.report_json)
+            self.report_json['metadata'] = {
+                'account': self.account_number,
+                'platform_id': str(self.report_platform_id),
+                'source': str(cluster_id)
+            }
+            json.dump(self.report_json, metric_file)
+
         try:
             minio_client.fput_object(bucket_name=MINIO_BUCKET,
                                      object_name=metric_file_name,
