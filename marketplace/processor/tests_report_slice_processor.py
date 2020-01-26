@@ -16,11 +16,10 @@
 #
 """Tests the upload message report processor."""
 
-import asyncio
 import json
 import uuid
 from datetime import datetime
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytz
 from django.test import TestCase
@@ -257,112 +256,3 @@ class ReportSliceProcessorTests(TestCase):
         self.assertEqual(str(existing.report_platform_id), str(self.uuid))
         # assert the processor was reset
         self.check_variables_are_reset()
-
-    def test_get_minio_client_not_configured(self):
-        """Test getting minio client when not configured."""
-        report_slice_processor.MINIO_ENDPOINT = None
-        report_slice_processor.MINIO_ACCESS_KEY = None
-        report_slice_processor.MINIO_SECRET_KEY = None
-        processor = report_slice_processor.ReportSliceProcessor()
-        minio_client = processor.get_minio_client()
-        self.assertIsNone(minio_client)
-
-    def test_get_minio_client_configured(self):
-        """Test get minio client when configured."""
-        report_slice_processor.MINIO_ENDPOINT = 'minio:9001'
-        report_slice_processor.MINIO_ACCESS_KEY = 'access'
-        report_slice_processor.MINIO_SECRET_KEY = 'secret'
-        processor = report_slice_processor.ReportSliceProcessor()
-        minio_client = processor.get_minio_client()
-        self.assertIsNotNone(minio_client)
-
-        # call again for branch path where already created
-        self.assertIsNotNone(processor.get_minio_client())
-
-    def test_upload_to_object_storage_none_client(self):
-        """Test error raised when client is not configured."""
-        event_loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(event_loop)
-        coro = asyncio.coroutine(
-            self.async_test_upload_to_objectstore_none_client)
-        event_loop.run_until_complete(coro())
-        event_loop.close()
-
-    async def async_test_upload_to_objectstore_none_client(self):
-        """Async setup for none client test."""
-        report_slice_processor.MINIO_ENDPOINT = None
-        report_slice_processor.MINIO_ACCESS_KEY = None
-        report_slice_processor.MINIO_SECRET_KEY = None
-        with self.assertRaises(report_slice_processor.RetryUploadTimeException):
-            await self.processor._upload_to_object_storage()
-
-    def test_upload_to_object_storage_no_bucket(self):
-        """Test error raised when bucket does not exist."""
-        event_loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(event_loop)
-        coro = asyncio.coroutine(
-            self.async_test_upload_to_objectstore_no_bucket)
-        event_loop.run_until_complete(coro())
-        event_loop.close()
-
-    async def async_test_upload_to_objectstore_no_bucket(self):
-        """Async setup for no bucket test."""
-        mock_minio = Mock()
-        mock_minio.bucket_exists.return_value = False
-        with patch('processor.report_slice_processor.'
-                   'ReportSliceProcessor.get_minio_client',
-                   return_value=mock_minio):
-            with self.assertRaises(report_slice_processor.RetryUploadTimeException):
-                await self.processor._upload_to_object_storage()
-
-    def test_upload_to_object_storage_upload_error(self):
-        """Test error raised an upload error occurs."""
-        event_loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(event_loop)
-        coro = asyncio.coroutine(
-            self.async_test_upload_to_objectstore_error)
-        event_loop.run_until_complete(coro())
-        event_loop.close()
-
-    async def async_test_upload_to_objectstore_error(self):
-        """Async setup for upload error test."""
-        mock_minio = Mock()
-        mock_minio.bucket_exists.return_value = True
-
-        # test KafkaConnectionException
-        def raise_error():
-            """Raise a general error."""
-            raise Exception('Test')
-
-        mock_minio.fput_object.side_effect = raise_error
-        with patch('processor.report_slice_processor.'
-                   'ReportSliceProcessor.get_minio_client',
-                   return_value=mock_minio):
-            with self.assertRaises(Exception):
-                await self.processor._upload_to_object_storage()
-
-    def test_upload_to_object_storage_upload_success(self):
-        """Test upload success pass."""
-        event_loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(event_loop)
-        coro = asyncio.coroutine(
-            self.async_test_upload_to_objectstore)
-        event_loop.run_until_complete(coro())
-        event_loop.close()
-
-    async def async_test_upload_to_objectstore(self):
-        """Async setup for upload error test."""
-        mock_minio = Mock()
-        mock_minio.bucket_exists.return_value = True
-        mock_minio.fput_object.return_value = True
-        report_json = {
-            'report_slice_id': '384794738'}
-        self.processor.report_or_slice = self.report_slice
-        self.processor.report_or_slice.report_json = json.dumps(report_json)
-        with patch('processor.report_slice_processor.'
-                   'ReportSliceProcessor.get_minio_client',
-                   return_value=mock_minio):
-            try:
-                await self.processor._upload_to_object_storage()
-            except Exception as err:  # pylint: disable=broad-except
-                self.fail(f'Unexpected exception {err}')

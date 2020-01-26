@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Red Hat, Inc.
+# Copyright 2018 Red Hat, Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -78,13 +78,6 @@ CW_AWS_SECRET_ACCESS_KEY = ENVIRONMENT.get_value('CW_AWS_SECRET_ACCESS_KEY', def
 CW_AWS_REGION = ENVIRONMENT.get_value('CW_AWS_REGION', default='us-east-1')
 CW_LOG_GROUP = ENVIRONMENT.get_value('CW_LOG_GROUP', default='platform-dev')
 
-# minio variables
-MINIO_ENDPOINT = ENVIRONMENT.get_value('MINIO_ENDPOINT', default=None)
-MINIO_ACCESS_KEY = ENVIRONMENT.get_value('MINIO_ACCESS_KEY', default=None)
-MINIO_SECRET_KEY = ENVIRONMENT.get_value('MINIO_SECRET_KEY', default=None)
-MINIO_SECURE = ENVIRONMENT.bool('MINIO_SECURE', default=True)
-MINIO_BUCKET = ENVIRONMENT.get_value('MINIO_BUCKET', default='open-marketplace')
-
 LOGGING_LEVEL = os.getenv('DJANGO_LOG_LEVEL', 'INFO')
 LOGGING_HANDLERS = os.getenv('DJANGO_LOG_HANDLERS', 'console').split(',')
 LOGGING_FORMATTER = os.getenv('DJANGO_LOG_FORMATTER', 'simple')
@@ -121,17 +114,22 @@ LOGGING = {
 
 if CW_AWS_ACCESS_KEY_ID:
     print('Configuring watchtower logging.')
-    POD_NAME = ENVIRONMENT.get_value('APP_POD_NAME', default='local')
+    NAMESPACE = 'unknown'
     try:
         BOTO3_SESSION = Session(aws_access_key_id=CW_AWS_ACCESS_KEY_ID,
                                 aws_secret_access_key=CW_AWS_SECRET_ACCESS_KEY,
                                 region_name=CW_AWS_REGION)
+        try:
+            with open("/var/run/secrets/kubernetes.io/serviceaccount/namespace", "r") as f:
+                NAMESPACE = f.read()
+        except Exception:  # pylint: disable=W0703
+            pass
         WATCHTOWER_HANDLER = {
             'level': LOGGING_LEVEL,
             'class': 'watchtower.CloudWatchLogHandler',
             'boto3_session': BOTO3_SESSION,
             'log_group': CW_LOG_GROUP,
-            'stream_name': POD_NAME,
+            'stream_name': NAMESPACE,
             'formatter': LOGGING_FORMATTER,
         }
         LOGGING['handlers']['watchtower'] = WATCHTOWER_HANDLER

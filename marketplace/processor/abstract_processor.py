@@ -84,6 +84,8 @@ REPORT_PROCESSING_LATENCY = Summary(
     'The time in seconds that it takes to process a report'
 )
 VALIDATION_LATENCY = Summary('validation_latency', 'The time it takes to validate a report')
+INVALID_HOSTS = Gauge('invalid_hosts', 'The number of invalid hosts',
+                      ['account_number', 'source'])
 
 
 # pylint: disable=broad-except, too-many-lines, too-many-public-methods

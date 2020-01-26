@@ -23,6 +23,7 @@ To get started developing against marketplace-processor first clone a local copy
 ```
 git clone https://github.com/RedHatInsights/marketplace-processor
 git clone https://github.com/RedHatInsights/insights-ingress-go
+git clone https://github.com/RedHatInsights/insights-host-inventory.git
 ```
 
 ### Configure environment variables
@@ -72,10 +73,8 @@ docker ps --format '{{.Names}}'
 ```
 You should see the following services up and running.
 ```
-grafana
+marketplace-processor_db-host-inventory_1
 marketplace-processor_db_1
-marketplace-processor_minio_1
-prometheus
 insightsingressgo_ingress_1
 insightsingressgo_kafka_1
 insightsingressgo_zookeeper_1
@@ -103,20 +102,6 @@ To send the sample data, run the following commands:
     ```
 
 5. Look at the marketplace-processor logs to follow the report processing to completion.
-
-
-## Prometheus
-You can view the running Prometheus server at [http://localhost:9090](http://localhost:9090). Here, you can execute queries by typing in the name of the metric you want and pressing the `execute` button. You can also view the target that we are monitoring (our metrics endpoint) and the configuration of the Prometheus server.
-
-If you would like to change the configuration of the Prometheus server, you can edit the configuration file found [here](https://github.com/RedHatInsights/marketplace-processor/blob/master/scripts/config/prometheus.yml). For example, if you would like to have a more accurate representation of the metrics, you can change change the scrape interval for the `marketplace` job before bringing the local development services up. Currently we are polling the `/metrics` endpoint every `10s` to mimic the scrape interval used in CI, but you can set this to `1s` for more accurate metrics in development.
-
-## Grafana
-In order to visualize the metrics that we are collecting, log in to Grafana at [http://localhost:3000](http://localhost:3000):
-1. Log in using `admin` as the username and `secret` as the password.
-
-2. Once you are logged in, click on `Create your first data source`, and select `Prometheus`. Leave all of the defaults, but enter `http://docker.for.mac.localhost:9090` into the `URL` field. Scroll down and click `Save & Test`.
-
-3. Now you can import our development dashboard. Click on the `+` in the lefthand toolbar and select `Import`. Next, select `Upload .json file` in the upper right-hand corner. Now, import [dev-grafana.json](https://github.com/RedHatInsights/marketplace-processor/blob/master/grafana/dev-grafana.json). Finally, click `Import` to begin using the yupana dashboard to visualize the data.
 
 
 ### Bringing down marketplace-processor and all services
@@ -180,30 +165,15 @@ Metadata should include information about the sender of the data and the report 
         "2dd60c11-ee5b-4ddc-8b75-d8d34de86a34": {
             "number_metrics": 1
         },
-        "eb45725b-165a-44d9-ad28-c531e3a1d9ac": {
-            "number_metrics": 1
-        }
+        "eb45725b-165a-44d9-ad28-c531e3a1d9ac": null
     }
 }
 ```
 
 
 ## Marketplace Processor Report Slice JSON Format
-Report slices are a slice format is as described below containing the slice ID reference and an array of metric objects.
-```
-{
-    "report_slice_id": "2dd60c11-ee5b-4ddc-8b75-d8d34de86a34",
-    "metrics": [{
-        "report_period_start": "2019-12-01 00:00:00 +0000 UTC",
-        "report_period_end": "2020-01-01 00:00:00 +0000 UTC",
-        "interval_start": "2019-12-01 00:00:00 +0000 UTC",
-        "interval_end": "2019-12-01 01:00:00 +0000 UTC",
-        ...
-        },
-        ...
-    ]
-}
-```
+Report slices are a slice format is TBD.
+
 
 # <a name="sending_data"></a> Sending Data to Platform Ingress service for Marketplace Processor
 Data being uploaded to the Platform must be in `tar.gz` format containing the `.json` files with the given JSON structure above. It is important to note that Marketplace Processor processes & tracks reports based on their UUIDS, which means that data with a specific UUID cannot be uploaded more than once, or else the second upload will be archived and not processed. Therefore, before every upload we need to generate a new UUID and replace the current one with it if we want to upload the same data more than once. Use the following instructions to prepare and upload a sample or custom report.
