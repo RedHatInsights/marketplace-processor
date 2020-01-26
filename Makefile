@@ -124,10 +124,9 @@ local-dev-up:
 	clear
 
 local-dev-down:
-	osascript -e 'quit app "iTerm"' | true
 	cd ../insights-ingress-go;docker-compose down
 	docker-compose down
-	sudo lsof -t -i tcp:8081 | xargs kill -9
+	osascript -e 'quit app "iTerm"' | true
 
 local-upload-data:
 	curl -vvvv -F "upload=@$(file);type=application/vnd.redhat.mkt.$(basename $(basename $(notdir $(file))))+tgz" \

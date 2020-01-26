@@ -10,12 +10,40 @@ services:
         POSTGRES_DB: postgres
       ports:
           - "15432:5432"
-  db-host-inventory:
-      image: postgres
-      restart: always
-      environment:
-        POSTGRES_PASSWORD: insights
-        POSTGRES_USER: insights
-        POSTGRES_DB: insights
+  minio:
+      image: minio/minio
+      command: server /data
+      volumes:
+        - '$MINIO_DATA_DIR:/data:Z'
+        - '$MINIO_CONFIG_DIR:/root/.minio:Z'
       ports:
-        - "5432:5432"
+        - 9001:9000
+      environment:
+        - MINIO_ACCESS_KEY=$MINIO_ACCESS_KEY
+        - MINIO_SECRET_KEY=$MINIO_SECRET_KEY
+  createbuckets:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc config host add myminio http://minio:9001 $MINIO_ACCESS_KEY $MINIO_SECRET_KEY;
+      /usr/bin/mc mb myminio/marketplace;
+      /usr/bin/mc policy download myminio/marketplace;
+      exit 0;
+      "
+  grafana:
+      ports:
+          - '3000:3000'
+      container_name: grafana
+      environment:
+          - GF_SERVER_ROOT_URL=http://grafana.server.name
+          - GF_SECURITY_ADMIN_PASSWORD=secret
+      image: grafana/grafana
+  prometheus:
+      container_name: prometheus
+      ports:
+          - '9090:9090'
+      volumes:
+          - './scripts/config/prometheus.yml:/etc/prometheus/prometheus.yml'
+      image: prom/prometheus
