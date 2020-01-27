@@ -168,12 +168,11 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
             account_number=self.account_number))
         # find all associated report slices
         report_slices = ReportSlice.objects.all().filter(report=self.report_or_slice)
-        self.status = FAILURE_CONFIRM_STATUS
+        self.status = SUCCESS_CONFIRM_STATUS
         for report_slice in report_slices:
             try:
                 self.report_json = json.loads(report_slice.report_json)
                 self._validate_report_details()
-                self.status = SUCCESS_CONFIRM_STATUS
                 # Here we want to update the report state of the actual report slice
                 options = {'state': ReportSlice.NEW}
                 self.update_slice_state(options=options, report_slice=report_slice)
@@ -181,6 +180,7 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
                 # if any MKTReportExceptions occur, we know that the report is not valid
                 # but has been successfully validated
                 # that means that this slice is invalid and only awaits being archived
+                self.status = FAILURE_CONFIRM_STATUS
                 options = {'state': ReportSlice.FAILED_VALIDATION, 'ready_to_archive': True}
                 self.update_slice_state(options=options, report_slice=report_slice)
             except Exception as error:  # pylint: disable=broad-except
@@ -188,6 +188,7 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
                 # which means it enters our odd state of retrying validation
                 LOG.error(format_message(self.prefix,
                                          'The following error occurred: %s.' % str(error)))
+                self.status = FAILURE_CONFIRM_STATUS
                 options = {'state': ReportSlice.RETRY_VALIDATION,
                            'retry': RETRY.increment}
                 self.update_slice_state(options=options, report_slice=report_slice)
