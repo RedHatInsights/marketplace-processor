@@ -18,6 +18,33 @@ This is a Python project developed using Python 3.6. Make sure you have at least
 
 ## Setup
 
+After following the setup steps described below the following components and flow will be in place for your development environment.
+
+```
+                                                                               +-------------+
+                                                                               |             |
+                                                                               |             |
+                                                                      +------->| Objectstore |
+                                                                      |        |             |
+                  +------------+              +-------------+         |        |             |
+                  |            |              |             |         |        +-------------+
+                  | Ingress    |     Kafka    | Marketplace |         |
+        +-------->| Service    +------------->| Processor   +---------+
+        |         |            |              |             |                 +--------------+
+        |         +------------+              |             |---------------> |              |
+        |                                     +-------------+                 |   Postgres   |
+        |                                            +                        |              |
+        |                                            | Application            +--------------+
+        +                                            | Metrics
+     Upload                                          |
+     Metrics                                         v
+                                              +---------------+      +------------+
+                                              |               |      |            |
+                                              |  Prometheus   |<-----|  Grafana   |
+                                              |               |      |            |
+                                              +---------------+      +------------+
+```
+
 ### Obtain source for local projects
 To get started developing against marketplace-processor first clone a local copy of the git repository.
 ```
@@ -174,7 +201,7 @@ Metadata should include information about the sender of the data and the report 
     "report_id": "05f373dd-e20e-4866-b2a4-9b523acfeb6d",
     "source": "f75a249f-1a46-450e-8af1-c3bbb2e75edc",  # Cluster ID
     "source_metadata": {
-        "any_cluster_info_you_want": "some stuff that will not be validated but will be logged"
+        "any_cluster_info_you_want": "some stuff that will not be validated but will be stored in Objectstore"
     },
     "report_slices": {
         "2dd60c11-ee5b-4ddc-8b75-d8d34de86a34": {
