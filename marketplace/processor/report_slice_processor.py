@@ -185,11 +185,17 @@ class ReportSliceProcessor(AbstractProcessor):  # pylint: disable=too-many-insta
         with metric_file:
             if self.report_json is None:
                 self.report_json = json.loads(self.report_or_slice.report_json)
-            self.report_json['metadata'] = {
+
+            metadata = {}
+            metadata_str = self.report_or_slice.source_metadata
+            if metadata_str:
+                metadata = json.loads(metadata_str)
+            metadata.update({
                 'account': self.account_number,
                 'platform_id': str(self.report_platform_id),
                 'source': str(cluster_id)
-            }
+            })
+            self.report_json['metadata'] = metadata
             json.dump(self.report_json, metric_file)
 
         try:
