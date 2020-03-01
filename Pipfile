@@ -34,7 +34,7 @@ pylint = "==2.4.4"
 pylint-django = "==2.0.14"
 pylint-plugin-utils = "==0.6"
 requests-mock = "==1.7.0"
-tox = "==3.14.2"
+tox = "==3.14.5"
 
 
 [requires]
