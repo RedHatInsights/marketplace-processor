@@ -393,17 +393,17 @@
       "stack": false,
       "steppedLine": false,
       "targets": [{
-          "expr": "time_retries_total",
+          "expr": "time_retries",
           "legendFormat": "Time Retries",
           "refId": "A"
         },
         {
-          "expr": "commit_retries_total",
+          "expr": "commit_retries",
           "legendFormat": "Commit Retries",
           "refId": "B"
         },
         {
-          "expr": "time_retries_total + commit_retries_total",
+          "expr": "time_retries + commit_retries",
           "legendFormat": "Total Retries",
           "refId": "C"
         }
@@ -492,32 +492,32 @@
       "stack": false,
       "steppedLine": false,
       "targets": [{
-          "expr": "archived_fail_reports_total",
+          "expr": "archived_fail_reports",
           "legendFormat": "Archived Failed Reports",
           "refId": "A"
         },
         {
-          "expr": "archived_success_reports_total",
+          "expr": "archived_success_reports",
           "legendFormat": "Archived Successful Reports",
           "refId": "B"
         },
         {
-          "expr": "archived_fail_reports_total + archived_success_reports_total",
+          "expr": "archived_fail_reports + archived_success_reports",
           "legendFormat": "Total Archived Reports",
           "refId": "C"
         },
         {
-          "expr": "archived_success_slices_total",
+          "expr": "archived_success_slices",
           "legendFormat": "Archived Successful Report Slices",
           "refId": "D"
         },
         {
-          "expr": "archived_fail_slices_total",
+          "expr": "archived_fail_slices",
           "legendFormat": "Archived Failed Report Slices",
           "refId": "E"
         },
         {
-          "expr": "archived_success_slices_total + archived_fail_slices_total",
+          "expr": "archived_success_slices + archived_fail_slices",
           "legendFormat": "Total Archived Report Slices",
           "refId": "F"
         }
@@ -602,17 +602,17 @@
       "stack": false,
       "steppedLine": false,
       "targets": [{
-          "expr": "failed_validation_total",
+          "expr": "failed_validation",
           "legendFormat": "Reports that failed validation",
           "refId": "A"
         },
         {
-          "expr": "failed_download_total",
+          "expr": "failed_download",
           "legendFormat": "Reports that failed to download",
           "refId": "B"
         },
         {
-          "expr": "invalid_reports_total",
+          "expr": "invalid_reports",
           "legendFormat": "Invalid reports ",
           "refId": "C"
         }

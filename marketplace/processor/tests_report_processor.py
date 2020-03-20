@@ -1032,9 +1032,9 @@ class ReportProcessorTests(TransactionTestCase):
         self.processor.account_number = '1234'
         failed_download_before = \
             REGISTRY.get_sample_value(
-                'failed_download_total', {'account_number': '1234'}) or 0
+                'failed_download', {'account_number': '1234'}) or 0.0
         self.processor.record_failed_state_metrics()
         failed_download_after = REGISTRY.get_sample_value(
-            'failed_download_total', {'account_number': '1234'})
+            'failed_download', {'account_number': '1234'})
         self.assertEqual(
-            1, int(failed_download_after) - failed_download_before)
+            1.0, float(failed_download_after) - failed_download_before)
