@@ -29,7 +29,7 @@ from processor.processor_utils import (format_message,
                                        stop_all_event_loops)
 from processor.report_consumer import (DB_ERRORS,
                                        MKTReportException)
-from prometheus_client import Counter, Gauge, Summary
+from prometheus_client import Gauge, Summary
 
 from api.models import (Report,
                         ReportSlice,
@@ -52,33 +52,33 @@ RETRY_TIME = int(RETRY_TIME)
 # setup for prometheus metrics
 QUEUED_REPORTS = Gauge('queued_reports', 'Reports waiting to be processed')
 QUEUED_REPORT_SLICES = Gauge('queued_report_slices', 'Report Slices waiting to be processed')
-ARCHIVED_FAIL_REPORTS = Counter('archived_fail_reports',
-                                'Reports that have been archived as failures',
+ARCHIVED_FAIL_REPORTS = Gauge('archived_fail_reports',
+                              'Reports that have been archived as failures',
+                              ['account_number'])
+ARCHIVED_SUCCESS_REPORTS = Gauge('archived_success_reports',
+                                 'Reports that have been archived as successes',
+                                 ['account_number'])
+ARCHIVED_FAIL_SLICES = Gauge('archived_fail_slices',
+                             'Slices that have been archived as failures',
+                             ['account_number'])
+ARCHIVED_SUCCESS_SLICES = Gauge('archived_success_slices',
+                                'Slices that have been archived as successes',
                                 ['account_number'])
-ARCHIVED_SUCCESS_REPORTS = Counter('archived_success_reports',
-                                   'Reports that have been archived as successes',
-                                   ['account_number'])
-ARCHIVED_FAIL_SLICES = Counter('archived_fail_slices',
-                               'Slices that have been archived as failures',
-                               ['account_number'])
-ARCHIVED_SUCCESS_SLICES = Counter('archived_success_slices',
-                                  'Slices that have been archived as successes',
-                                  ['account_number'])
-FAILED_TO_DOWNLOAD = Counter('failed_download',
-                             'Reports that failed to download',
-                             ['account_number'])
-FAILED_TO_VALIDATE = Counter('failed_validation',
-                             'Reports that could not be validated',
-                             ['account_number'])
-INVALID_REPORTS = Counter('invalid_reports',
-                          'Reports containing invalid syntax',
-                          ['account_number'])
-TIME_RETRIES = Counter('time_retries',
-                       'The total number of retries based on time for all reports',
+FAILED_TO_DOWNLOAD = Gauge('failed_download',
+                           'Reports that failed to download',
+                           ['account_number'])
+FAILED_TO_VALIDATE = Gauge('failed_validation',
+                           'Reports that could not be validated',
+                           ['account_number'])
+INVALID_REPORTS = Gauge('invalid_reports',
+                        'Reports containing invalid syntax',
+                        ['account_number'])
+TIME_RETRIES = Gauge('time_retries',
+                     'The total number of retries based on time for all reports',
+                     ['account_number'])
+COMMIT_RETRIES = Gauge('commit_retries',
+                       'The total number of retries based on commit for all reports',
                        ['account_number'])
-COMMIT_RETRIES = Counter('commit_retries',
-                         'The total number of retries based on commit for all reports',
-                         ['account_number'])
 REPORT_PROCESSING_LATENCY = Summary(
     'report_processing_latency',
     'The time in seconds that it takes to process a report'
