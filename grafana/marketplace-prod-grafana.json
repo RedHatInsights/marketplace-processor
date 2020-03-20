@@ -326,21 +326,21 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(time_retries_total{kubernetes_namespace=\"marketplace-prod\"})",
+          "expr": "sum(time_retries{kubernetes_namespace=\"marketplace-prod\"})",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Time Retries",
           "refId": "A"
         },
         {
-          "expr": "sum(commit_retries_total{kubernetes_namespace=\"marketplace-prod\"})",
+          "expr": "sum(commit_retries{kubernetes_namespace=\"marketplace-prod\"})",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Commit Retries",
           "refId": "B"
         },
         {
-          "expr": "sum(time_retries_total{kubernetes_namespace=\"marketplace-prod\"}) + sum(commit_retries_total{kubernetes_namespace=\"marketplace-prod\"})",
+          "expr": "sum(time_retries{kubernetes_namespace=\"marketplace-prod\"}) + sum(commit_retries{kubernetes_namespace=\"marketplace-prod\"})",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Total Retries",
@@ -432,42 +432,42 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(archived_fail_reports_total{kubernetes_namespace=\"marketplace-prod\"})",
+          "expr": "sum(archived_fail_reports{kubernetes_namespace=\"marketplace-prod\"})",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Archived Failed Reports",
           "refId": "A"
         },
         {
-          "expr": "sum(archived_success_reports_total{kubernetes_namespace=\"marketplace-prod\"})",
+          "expr": "sum(archived_success_reports{kubernetes_namespace=\"marketplace-prod\"})",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Archived Successful Reports",
           "refId": "B"
         },
         {
-          "expr": "sum(archived_fail_reports_total{kubernetes_namespace=\"marketplace-prod\"}) + sum(archived_success_reports_total{kubernetes_namespace=\"marketplace-prod\"})",
+          "expr": "sum(archived_fail_reports{kubernetes_namespace=\"marketplace-prod\"}) + sum(archived_success_reports{kubernetes_namespace=\"marketplace-prod\"})",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Total Archived Reports",
           "refId": "C"
         },
         {
-          "expr": "sum(archived_success_slices_total{kubernetes_namespace=\"marketplace-prod\"})",
+          "expr": "sum(archived_success_slices{kubernetes_namespace=\"marketplace-prod\"})",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Archived Successful Report Slices",
           "refId": "D"
         },
         {
-          "expr": "sum(archived_fail_slices_total{kubernetes_namespace=\"marketplace-prod\"})",
+          "expr": "sum(archived_fail_slices{kubernetes_namespace=\"marketplace-prod\"})",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Archived Failed Report Slices",
           "refId": "E"
         },
         {
-          "expr": "sum(archived_success_slices_total{kubernetes_namespace=\"marketplace-prod\"}) + sum(archived_fail_slices_total{kubernetes_namespace=\"marketplace-prod\"})",
+          "expr": "sum(archived_success_slices{kubernetes_namespace=\"marketplace-prod\"}) + sum(archived_fail_slices{kubernetes_namespace=\"marketplace-prod\"})",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Total Archived Report Slices",
@@ -555,21 +555,21 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(failed_validation_total{kubernetes_namespace=\"marketplace-prod\"})",
+          "expr": "sum(failed_validation{kubernetes_namespace=\"marketplace-prod\"})",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Reports that failed validation",
           "refId": "A"
         },
         {
-          "expr": "sum(failed_download_total{kubernetes_namespace=\"marketplace-prod\"})",
+          "expr": "sum(failed_download{kubernetes_namespace=\"marketplace-prod\"})",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Reports that failed to download",
           "refId": "B"
         },
         {
-          "expr": "sum(invalid_reports_total{kubernetes_namespace=\"marketplace-prod\"})",
+          "expr": "sum(invalid_reports{kubernetes_namespace=\"marketplace-prod\"})",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Invalid reports ",
