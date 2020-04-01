@@ -20,7 +20,7 @@ django-prometheus = "==2.0.0"
 prometheus-client = "==0.7.1"
 boto3 = "==1.12.33"
 watchtower = "==0.7.3"
-minio = "==5.0.6"
+minio = "==5.0.8"
 
 
 [dev-packages]
