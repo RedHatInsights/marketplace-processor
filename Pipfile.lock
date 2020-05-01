@@ -261,10 +261,9 @@
         },
         "autopep8": {
             "hashes": [
-                "sha256:4d8eec30cc81bc5617dbf1218201d770dc35629363547f17577c61683ccfb3ee"
+                "sha256:152fd8fe47d02082be86e05001ec23d6f420086db56b17fc883f3f965fb34954"
             ],
-            "index": "pypi",
-            "version": "==1.4.4"
+            "version": "==1.5.2"
         },
         "certifi": {
             "hashes": [
