@@ -120,11 +120,11 @@
         },
         "minio": {
             "hashes": [
-                "sha256:daef713dfaaa232a719c4dc58f0bed90b6d11ab14e94cd013cef7e7ed5b2cfdc",
-                "sha256:e5dc4670fe5c3e0ef61e9556bbae4768fcb051f3deb73d89e40a1b470dc9bd88"
+                "sha256:6ecb7637a35f806733e9d112eacfa599a58d7c3d4698fda2b5c86fff5d34b417",
+                "sha256:71984a47fc8268afdfd1d0ed5e45e72f45f6495591878b0eaa7f77b2503e96ab",
+                "sha256:ba5978a97e3366983c8b4ea11f2ae8e1add995ab4789e0098dd2403199999ac4"
             ],
-            "index": "pypi",
-            "version": "==5.0.6"
+            "version": "==5.0.10"
         },
         "prometheus-client": {
             "hashes": [
