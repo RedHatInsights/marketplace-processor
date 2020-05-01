@@ -545,10 +545,10 @@
         },
         "virtualenv": {
             "hashes": [
-                "sha256:0a854711f2dcae9a644f105d36f5cc6814cd61db47de8c01b8f315d61214afe4",
-                "sha256:a7ac634372748fa4e63e956f8e6981442747fcb4a209876b34e1ff5018d3cfe3"
+                "sha256:5021396e8f03d0d002a770da90e31e61159684db2859d0ba4850fbea752aa675",
+                "sha256:ac53ade75ca189bc97b6c1d9ec0f1a50efe33cbf178ae09452dcd9fd309013c1"
             ],
-            "version": "==20.0.11"
+            "version": "==20.0.18"
         },
         "wrapt": {
             "hashes": [
