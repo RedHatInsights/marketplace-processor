@@ -133,6 +133,7 @@ if CW_AWS_ACCESS_KEY_ID:
             'log_group': CW_LOG_GROUP,
             'stream_name': POD_NAME,
             'formatter': LOGGING_FORMATTER,
+            'create_log_group': False,
         }
         LOGGING['handlers']['watchtower'] = WATCHTOWER_HANDLER
     except ClientError as cerr:
