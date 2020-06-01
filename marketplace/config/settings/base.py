@@ -89,8 +89,43 @@ LOGGING_LEVEL = os.getenv('DJANGO_LOG_LEVEL', 'INFO')
 LOGGING_HANDLERS = os.getenv('DJANGO_LOG_HANDLERS', 'console').split(',')
 LOGGING_FORMATTER = os.getenv('DJANGO_LOG_FORMATTER', 'simple')
 
+
 if CW_AWS_ACCESS_KEY_ID:
-    LOGGING_HANDLERS += ['watchtower']
+    try:
+        POD_NAME = ENVIRONMENT.get_value("APP_POD_NAME", default="local")
+        BOTO3_SESSION = Session(
+            aws_access_key_id=CW_AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=CW_AWS_SECRET_ACCESS_KEY,
+            region_name=CW_AWS_REGION,
+        )
+        watchtower = BOTO3_SESSION.client("logs")  # pylint: disable=invalid-name
+        watchtower.create_log_stream(logGroupName=CW_LOG_GROUP, logStreamName=POD_NAME)
+        LOGGING_HANDLERS += ["watchtower"]
+        WATCHTOWER_HANDLER = {
+            "level": LOGGING_LEVEL,
+            "class": "watchtower.CloudWatchLogHandler",
+            "boto3_session": BOTO3_SESSION,
+            "log_group": CW_LOG_GROUP,
+            "stream_name": POD_NAME,
+            "formatter": LOGGING_FORMATTER,
+            "use_queues": False,
+            "create_log_group": False,
+        }
+    except ClientError as client_err:
+        if client_err.response.get("Error", {}).get("Code") == "ResourceAlreadyExistsException":
+            LOGGING_HANDLERS += ["watchtower"]
+            WATCHTOWER_HANDLER = {
+                "level": LOGGING_LEVEL,
+                "class": "watchtower.CloudWatchLogHandler",
+                "boto3_session": BOTO3_SESSION,
+                "log_group": CW_LOG_GROUP,
+                "stream_name": POD_NAME,
+                "formatter": LOGGING_FORMATTER,
+                "use_queues": False,
+                "create_log_group": False,
+            }
+        else:
+            print("CloudWatch not configured.")
 
 LOGGING = {
     'version': 1,
@@ -118,29 +153,6 @@ LOGGING = {
         },
     },
 }
-
-if CW_AWS_ACCESS_KEY_ID:
-    print('Configuring watchtower logging.')
-    POD_NAME = ENVIRONMENT.get_value('APP_POD_NAME', default='local')
-    try:
-        BOTO3_SESSION = Session(aws_access_key_id=CW_AWS_ACCESS_KEY_ID,
-                                aws_secret_access_key=CW_AWS_SECRET_ACCESS_KEY,
-                                region_name=CW_AWS_REGION)
-        WATCHTOWER_HANDLER = {
-            'level': LOGGING_LEVEL,
-            'class': 'watchtower.CloudWatchLogHandler',
-            'boto3_session': BOTO3_SESSION,
-            'log_group': CW_LOG_GROUP,
-            'stream_name': POD_NAME,
-            'formatter': LOGGING_FORMATTER,
-            'create_log_group': False,
-        }
-        LOGGING['handlers']['watchtower'] = WATCHTOWER_HANDLER
-    except ClientError as cerr:
-        print('CloudWatch logging setup failed: %s' % cerr)
-else:
-    print('Unable to configure watchtower logging.'
-          'Please verify watchtower logging configuration!')
 
 # Default apps go here
 DJANGO_APPS = [
