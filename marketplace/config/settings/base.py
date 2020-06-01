@@ -154,6 +154,10 @@ LOGGING = {
     },
 }
 
+if "watchtower" in LOGGING_HANDLERS:
+    LOGGING["handlers"]["watchtower"] = WATCHTOWER_HANDLER
+    print("CloudWatch configured.")
+
 # Default apps go here
 DJANGO_APPS = [
     'django.contrib.admin',
