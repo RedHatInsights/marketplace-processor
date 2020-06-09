@@ -1,7 +1,5 @@
 #!/usr/bin/env python
-
 import json
-import os
 
 lockfile = {}
 
@@ -15,9 +13,9 @@ with open("marketplace-manifest", "w") as manifest:
     for name, value in sorted(lockfile["default"].items()):
         if "version" in value:
             version = value["version"].replace("=", "")
-            manifest.write("mgmt_services/marketplace:processor/python-%s:%s.pipfile\n" % (name, version))
+            manifest.write(f"mgmt_services/marketplace:processor/python-{name}:{version}.pipfile\n")
         elif "ref" in value:
             ref = value["ref"]
-            manifest.write("mgmt_services/marketplace:processor/python-%s:%s.pipfile\n" % (name, ref))
+            manifest.write(f"mgmt_services/marketplace:processor/python-{name}:{ref}.pipfile\n")
         else:
             raise "unable to parse %s" % value

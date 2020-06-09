@@ -15,21 +15,21 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 """Tests the garbage collector."""
-
 import asyncio
 import json
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 from unittest.mock import patch
 
 import pytz
 from django.test import TestCase
-from processor import garbage_collection
 
-from api.models import (Report,
-                        ReportArchive,
-                        ReportSlice,
-                        ReportSliceArchive)
+from api.models import Report
+from api.models import ReportArchive
+from api.models import ReportSlice
+from api.models import ReportSliceArchive
+from processor import garbage_collection
 
 
 class GarbageCollectorTests(TestCase):
@@ -40,13 +40,14 @@ class GarbageCollectorTests(TestCase):
         self.uuid = uuid.uuid4()
         self.uuid2 = uuid.uuid4()
         self.report_json = {
-            'report_id': 1,
-            'report_type': 'insights',
-            'status': 'completed',
-            'report_platform_id': '5f2cc1fd-ec66-4c67-be1b-171a595ce319'}
+            "report_id": 1,
+            "report_type": "insights",
+            "status": "completed",
+            "report_platform_id": "5f2cc1fd-ec66-4c67-be1b-171a595ce319",
+        }
         self.archive_report = ReportArchive(
             upload_srv_kafka_msg=json.dumps({}),
-            account='1234',
+            account="1234",
             state=Report.NEW,
             state_info=json.dumps([Report.NEW]),
             last_update_time=datetime.now(pytz.utc),
@@ -55,13 +56,14 @@ class GarbageCollectorTests(TestCase):
             source=uuid.uuid4(),
             arrival_time=datetime.now(pytz.utc),
             processing_start_time=datetime.now(pytz.utc),
-            processing_end_time=datetime.now(pytz.utc))
+            processing_end_time=datetime.now(pytz.utc),
+        )
         self.archive_report.save()
         self.archive_slice = ReportSliceArchive(
             report=self.archive_report,
             report_platform_id=self.uuid,
             report_slice_id=self.uuid2,
-            account='13423',
+            account="13423",
             report_json=json.dumps(self.report_json),
             state=ReportSlice.NEW,
             state_info=json.dumps([ReportSlice.NEW]),
@@ -71,7 +73,8 @@ class GarbageCollectorTests(TestCase):
             source=uuid.uuid4(),
             creation_time=datetime.now(pytz.utc),
             processing_start_time=datetime.now(pytz.utc),
-            processing_end_time=datetime.now(pytz.utc))
+            processing_end_time=datetime.now(pytz.utc),
+        )
         self.archive_slice.save()
         self.garbage_collector = garbage_collection.GarbageCollector()
 
@@ -94,7 +97,7 @@ class GarbageCollectorTests(TestCase):
         weeks_old_time = current_time - timedelta(weeks=6)
         archive_report2 = ReportArchive(
             upload_srv_kafka_msg=json.dumps({}),
-            account='12345',
+            account="12345",
             state=Report.NEW,
             state_info=json.dumps([Report.NEW]),
             last_update_time=datetime.now(pytz.utc),
@@ -103,7 +106,8 @@ class GarbageCollectorTests(TestCase):
             source=uuid.uuid4(),
             arrival_time=datetime.now(pytz.utc),
             processing_start_time=datetime.now(pytz.utc),
-            processing_end_time=weeks_old_time)
+            processing_end_time=weeks_old_time,
+        )
         archive_report2.save()
         self.archive_report.processing_end_time = weeks_old_time
         self.archive_report.save()
@@ -133,15 +137,16 @@ class GarbageCollectorTests(TestCase):
 
         def run_side_effect():
             self.garbage_collector.should_run = False
+
         # this is to test that the run method does call the
         # garbage collector & we flip should_run to False to
         # allow us to exit the loop
-        with patch('processor.garbage_collection.'
-                   'GarbageCollector.remove_outdated_archives',
-                   side_effect=run_side_effect):
+        with patch(
+            "processor.garbage_collection." "GarbageCollector.remove_outdated_archives", side_effect=run_side_effect
+        ):
             await self.garbage_collector.run()
 
-    @patch('processor.garbage_collection.GARBAGE_COLLECTION_INTERVAL', 1)
+    @patch("processor.garbage_collection.GARBAGE_COLLECTION_INTERVAL", 1)
     def test_run_method(self):
         """Test the async run function."""
         event_loop = asyncio.new_event_loop()

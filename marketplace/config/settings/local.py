@@ -14,11 +14,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-
 """Settings file meant for local development."""
 # pylint: disable=wildcard-import, unused-wildcard-import
 from .base import *  # noqa: F401,F403
 from .env import ENVIRONMENT
 
-DEBUG = ENVIRONMENT.bool('DJANGO_DEBUG', default=True)
-SECRET_KEY = ENVIRONMENT.get_value('DJANGO_SECRET_KEY', default='local')
+DEBUG = ENVIRONMENT.bool("DJANGO_DEBUG", default=True)
+SECRET_KEY = ENVIRONMENT.get_value("DJANGO_SECRET_KEY", default="local")

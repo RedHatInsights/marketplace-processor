@@ -75,7 +75,7 @@ html:
 	@cd docs; $(MAKE) html
 
 lint:
-	tox -elint
+	pre-commit run --all-files
 
 collect-static:
 	$(PYTHON) $(PYDIR)/manage.py collectstatic --no-input

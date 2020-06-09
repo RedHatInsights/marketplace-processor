@@ -8,34 +8,32 @@
 # along with this software; if not, see
 # https://www.gnu.org/licenses/gpl-3.0.txt.
 #
-
 """Serializer for report slice progress."""
+from rest_framework.serializers import BooleanField
+from rest_framework.serializers import CharField
+from rest_framework.serializers import ChoiceField
+from rest_framework.serializers import DateTimeField
+from rest_framework.serializers import IntegerField
+from rest_framework.serializers import JSONField
+from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import UUIDField
 
-from rest_framework.serializers import (BooleanField,
-                                        CharField,
-                                        ChoiceField,
-                                        DateTimeField,
-                                        IntegerField,
-                                        JSONField,
-                                        ModelSerializer,
-                                        UUIDField)
-
-from api.models import ReportSlice, ReportSliceArchive
+from api.models import ReportSlice
+from api.models import ReportSliceArchive
 
 
 class AbstractReportSliceSerializer(ModelSerializer):
     """Abstract serializer for the ReportSlice models."""
 
-    report_platform_id = UUIDField(format='hex_verbose', required=False)
-    report_slice_id = UUIDField(format='hex_verbose', required=False)
+    report_platform_id = UUIDField(format="hex_verbose", required=False)
+    report_slice_id = UUIDField(format="hex_verbose", required=False)
     account = CharField(max_length=50, required=False)
     report_json = JSONField(allow_null=False)
     git_commit = CharField(max_length=50, required=False)
-    source = UUIDField(format='hex_verbose', required=False)
+    source = UUIDField(format="hex_verbose", required=False)
     source_metadata = JSONField(allow_null=True, required=False)
     state = ChoiceField(choices=ReportSlice.STATE_CHOICES)
-    retry_type = ChoiceField(choices=ReportSlice.RETRY_CHOICES,
-                             default=ReportSlice.TIME)
+    retry_type = ChoiceField(choices=ReportSlice.RETRY_CHOICES, default=ReportSlice.TIME)
     state_info = JSONField(allow_null=False)
     retry_count = IntegerField(default=0)
     last_update_time = DateTimeField(allow_null=False)
@@ -48,7 +46,7 @@ class AbstractReportSliceSerializer(ModelSerializer):
         """Meta class for AbstractReportSliceSerializer."""
 
         abstract = True
-        fields = '__all__'
+        fields = "__all__"
 
 
 class ReportSliceSerializer(AbstractReportSliceSerializer):
@@ -58,7 +56,7 @@ class ReportSliceSerializer(AbstractReportSliceSerializer):
         """Meta class for the ReportSliceSerializer."""
 
         model = ReportSlice
-        fields = '__all__'
+        fields = "__all__"
 
 
 class ReportSliceArchiveSerializer(AbstractReportSliceSerializer):
@@ -68,4 +66,4 @@ class ReportSliceArchiveSerializer(AbstractReportSliceSerializer):
         """Meta class for the ReportSliceArchiveSerializer."""
 
         model = ReportSliceArchive
-        fields = '__all__'
+        fields = "__all__"

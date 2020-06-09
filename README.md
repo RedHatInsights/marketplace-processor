@@ -79,6 +79,12 @@ Then project dependencies and a virtual environment can be created using:
 ```
 pipenv install --dev
 ```
+
+Install the pre-commit hooks for the repository:
+```
+pre-commit install
+```
+
 ### Bringing up marketplace-processor with all services
 First, make sure you have no zombie docker containers that could conflict with the services you are bringing up.  Run:
 ```
