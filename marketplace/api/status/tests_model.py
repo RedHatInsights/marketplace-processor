@@ -15,15 +15,16 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 """Test the status API."""
-
 import logging
 from collections import namedtuple
-from unittest.mock import ANY, Mock, patch
+from unittest.mock import ANY
+from unittest.mock import Mock
+from unittest.mock import patch
 
 from django.test import TestCase
-from release import DEFAULT_VERSION
 
 from api.status.model import Status
+from release import DEFAULT_VERSION
 
 
 class StatusModelTest(TestCase):
@@ -42,72 +43,67 @@ class StatusModelTest(TestCase):
         # restore filters on logging
         logging.disable(logging.CRITICAL)
 
-    @patch('os.environ')
+    @patch("os.environ")
     def test_commit_with_env(self, mock_os):
         """Test the commit method via environment."""
-        expected = 'buildnum'
+        expected = "buildnum"
         mock_os.get.return_value = expected
         result = self.status_info.git_commit
         self.assertEqual(result, expected)
 
-    @patch('os.environ')
+    @patch("os.environ")
     def test_env_vars(self, mock_envs):
         """Test the environment variables."""
-        expected = {
-            'key': 'value',
-            'password': '1234',
-            'good_PassWord': '2345'}
+        expected = {"key": "value", "password": "1234", "good_PassWord": "2345"}
         mock_envs.items.return_value = expected.items()
         result = self.status_info.environment_vars
 
         self.assertNotEqual(result, expected)
-        expected['password'] = '*' * 8
-        expected['good_PassWord'] = '*' * 8
+        expected["password"] = "*" * 8
+        expected["good_PassWord"] = "*" * 8
         self.assertEqual(result, expected)
 
-    @patch('subprocess.run')
-    @patch('api.status.model.os.environ')
+    @patch("subprocess.run")
+    @patch("api.status.model.os.environ")
     def test_commit_with_subprocess(self, mock_os, mock_subprocess):
         """Test the commit method via subprocess."""
-        expected = 'buildnum'
+        expected = "buildnum"
         run = Mock()
-        run.stdout = b'buildnum'
+        run.stdout = b"buildnum"
         mock_subprocess.return_value = run
         mock_os.get.return_value = None
         result = self.status_info.git_commit
         self.assertEqual(result, expected)
 
-    @patch('platform.uname')
+    @patch("platform.uname")
     def test_platform_info(self, mock_platform):
         """Test the platform_info method."""
-        platform_record = namedtuple('Platform', ['os', 'version'])
-        a_plat = platform_record('Red Hat', '7.4')
+        platform_record = namedtuple("Platform", ["os", "version"])
+        a_plat = platform_record("Red Hat", "7.4")
         mock_platform.return_value = a_plat
         result = self.status_info.platform_info
-        self.assertEqual(result['os'], 'Red Hat')
-        self.assertEqual(result['version'], '7.4')
+        self.assertEqual(result["os"], "Red Hat")
+        self.assertEqual(result["version"], "7.4")
 
-    @patch('sys.version')
+    @patch("sys.version")
     def test_python_version(self, mock_sys_ver):
         """Test the python_version method."""
-        expected = 'Python 3.6'
+        expected = "Python 3.6"
         mock_sys_ver.replace.return_value = expected
         result = self.status_info.python_version
         self.assertEqual(result, expected)
 
-    @patch('sys.modules')
+    @patch("sys.modules")
     def test_modules(self, mock_modules):
         """Test the modules method."""
-        expected = {'module1': 'version1',
-                    'module2': 'version2'}
-        mod1 = Mock(__version__='version1')
-        mod2 = Mock(__version__='version2')
-        mock_modules.items.return_value = (('module1', mod1),
-                                           ('module2', mod2))
+        expected = {"module1": "version1", "module2": "version2"}
+        mod1 = Mock(__version__="version1")
+        mod2 = Mock(__version__="version2")
+        mock_modules.items.return_value = (("module1", mod1), ("module2", mod2))
         result = self.status_info.modules
         self.assertEqual(result, expected)
 
-    @patch('api.status.model.logger.info')
+    @patch("api.status.model.logger.info")
     def test_startup_with_modules(self, mock_logger):  # pylint: disable=no-self-use
         """Test the startup method with a module list."""
         self.status_info.startup()
@@ -117,5 +113,5 @@ class StatusModelTest(TestCase):
         """Test the release version default."""
         release_version = self.status_info.release_version
         git_commit = self.status_info.git_commit
-        expected = '%s.%s' % (DEFAULT_VERSION, git_commit)
+        expected = f"{DEFAULT_VERSION}.{git_commit}"
         self.assertEqual(expected, release_version)

@@ -15,8 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 """Test the status API."""
-
-
 from django.test import TestCase
 from django.urls import reverse
 
@@ -26,7 +24,7 @@ class StatusViewTest(TestCase):
 
     def test_status_endpoint(self):
         """Test the status endpoint."""
-        url = reverse('server-status')
+        url = reverse("server-status")
         response = self.client.get(url)
         json_result = response.json()
-        self.assertEqual(json_result['api_version'], 1)
+        self.assertEqual(json_result["api_version"], 1)

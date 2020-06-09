@@ -8,12 +8,11 @@
 # along with this software; if not, see
 # https://www.gnu.org/licenses/gpl-3.0.txt.
 #
-
 """Model for report slice progress."""
-
 from django.db import models
 
-from api.report.model import Report, ReportArchive
+from api.report.model import Report
+from api.report.model import ReportArchive
 
 
 class AbstractReportSlice(models.Model):
@@ -28,39 +27,32 @@ class AbstractReportSlice(models.Model):
     source = models.UUIDField(null=True)
     source_metadata = models.TextField(null=True)
 
-    PENDING = 'pending'
-    NEW = 'new'
-    RETRY_VALIDATION = 'retry_validation'
-    FAILED_VALIDATION = 'failed_validation'
-    VALIDATED = 'validated'
-    STARTED = 'started'
-    METRICS_UPLOADED = 'hosts uploaded'
-    FAILED_METRICS_UPLOAD = 'failed to upload metrics'
-    STATE_CHOICES = ((PENDING, PENDING),
-                     (NEW, NEW),
-                     (RETRY_VALIDATION, RETRY_VALIDATION),
-                     (FAILED_VALIDATION, FAILED_VALIDATION),
-                     (VALIDATED, VALIDATED),
-                     (STARTED, STARTED),
-                     (METRICS_UPLOADED, METRICS_UPLOADED),
-                     (FAILED_METRICS_UPLOAD, FAILED_METRICS_UPLOAD))
-
-    state = models.CharField(
-        max_length=28,
-        choices=STATE_CHOICES,
-        default=NEW
+    PENDING = "pending"
+    NEW = "new"
+    RETRY_VALIDATION = "retry_validation"
+    FAILED_VALIDATION = "failed_validation"
+    VALIDATED = "validated"
+    STARTED = "started"
+    METRICS_UPLOADED = "hosts uploaded"
+    FAILED_METRICS_UPLOAD = "failed to upload metrics"
+    STATE_CHOICES = (
+        (PENDING, PENDING),
+        (NEW, NEW),
+        (RETRY_VALIDATION, RETRY_VALIDATION),
+        (FAILED_VALIDATION, FAILED_VALIDATION),
+        (VALIDATED, VALIDATED),
+        (STARTED, STARTED),
+        (METRICS_UPLOADED, METRICS_UPLOADED),
+        (FAILED_METRICS_UPLOAD, FAILED_METRICS_UPLOAD),
     )
 
-    TIME = 'time'
-    GIT_COMMIT = 'git commit'
-    RETRY_CHOICES = ((TIME, TIME),
-                     (GIT_COMMIT, GIT_COMMIT))
+    state = models.CharField(max_length=28, choices=STATE_CHOICES, default=NEW)
 
-    retry_type = models.CharField(
-        max_length=10,
-        choices=RETRY_CHOICES,
-        default=TIME
-    )
+    TIME = "time"
+    GIT_COMMIT = "git commit"
+    RETRY_CHOICES = ((TIME, TIME), (GIT_COMMIT, GIT_COMMIT))
+
+    retry_type = models.CharField(max_length=10, choices=RETRY_CHOICES, default=TIME)
 
     state_info = models.TextField(null=True)
     retry_count = models.PositiveSmallIntegerField(null=True)
@@ -71,22 +63,23 @@ class AbstractReportSlice(models.Model):
 
     def __str__(self):
         """Convert to string."""
-        return '{' + 'report_platform_id:{}, '\
-            'report_slice_id: {}, '\
-            'account: {}, ' \
-            'report_json: {}, '\
-            'git_commit: {}, '\
-            'ready_to_archive: {}, '\
-            'source: {}, '\
-            'source_metadata: {}, '\
-            'state: {}, '\
-            'state_info: {}, '\
-            'retry_count: {}, '\
-            'retry_type: {}, '\
-            'last_update_time: {}, '\
-            'creation_time: {}, '\
-            'processing_start_time: {}, '\
-            'processing_end_time: {} '.format(
+        return (
+            "{" + "report_platform_id:{}, "
+            "report_slice_id: {}, "
+            "account: {}, "
+            "report_json: {}, "
+            "git_commit: {}, "
+            "ready_to_archive: {}, "
+            "source: {}, "
+            "source_metadata: {}, "
+            "state: {}, "
+            "state_info: {}, "
+            "retry_count: {}, "
+            "retry_type: {}, "
+            "last_update_time: {}, "
+            "creation_time: {}, "
+            "processing_start_time: {}, "
+            "processing_end_time: {} ".format(
                 self.report_platform_id,
                 self.report_slice_id,
                 self.account,
@@ -102,7 +95,10 @@ class AbstractReportSlice(models.Model):
                 self.last_update_time,
                 self.creation_time,
                 self.processing_start_time,
-                self.processing_end_time) + '}'
+                self.processing_end_time,
+            )
+            + "}"  # noqa:W503
+        )
 
     class Meta:
         """Metadata for abstract report slice model."""

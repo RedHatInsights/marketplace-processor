@@ -14,23 +14,22 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-
 """View for server status."""
-
 from rest_framework import permissions
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view
+from rest_framework.decorators import permission_classes
 from rest_framework.response import Response
 
 from api.status.model import Status
 from api.status.serializer import StatusSerializer
 
 
-@api_view(['GET', 'HEAD'])
+@api_view(["GET", "HEAD"])
 @permission_classes((permissions.AllowAny,))
 def status(request):
     """Provide the server status information."""
     status_info = Status()
     serializer = StatusSerializer(status_info)
     server_info = serializer.data
-    server_info['server_address'] = request.META.get('HTTP_HOST', 'localhost')
+    server_info["server_address"] = request.META.get("HTTP_HOST", "localhost")
     return Response(server_info)

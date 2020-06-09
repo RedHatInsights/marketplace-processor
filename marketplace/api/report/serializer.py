@@ -8,26 +8,25 @@
 # along with this software; if not, see
 # https://www.gnu.org/licenses/gpl-3.0.txt.
 #
-
 """Serializer for report progress."""
+from rest_framework.serializers import BooleanField
+from rest_framework.serializers import CharField
+from rest_framework.serializers import ChoiceField
+from rest_framework.serializers import DateTimeField
+from rest_framework.serializers import IntegerField
+from rest_framework.serializers import JSONField
+from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import UUIDField
 
-from rest_framework.serializers import (BooleanField,
-                                        CharField,
-                                        ChoiceField,
-                                        DateTimeField,
-                                        IntegerField,
-                                        JSONField,
-                                        ModelSerializer,
-                                        UUIDField)
-
-from api.models import Report, ReportArchive
+from api.models import Report
+from api.models import ReportArchive
 
 
 class AbstractReportSerializer(ModelSerializer):
     """Abstract serializer for the Report models."""
 
-    report_platform_id = UUIDField(format='hex_verbose', required=False)
-    source = UUIDField(format='hex_verbose', required=False)
+    report_platform_id = UUIDField(format="hex_verbose", required=False)
+    source = UUIDField(format="hex_verbose", required=False)
     source_metadata = JSONField(allow_null=True, required=False)
     account = CharField(max_length=50, required=False)
     request_id = CharField(max_length=50, required=False)
@@ -48,7 +47,7 @@ class AbstractReportSerializer(ModelSerializer):
         """Meta class for ReportSerializer."""
 
         abstract = True
-        fields = '__all__'
+        fields = "__all__"
 
 
 class ReportSerializer(AbstractReportSerializer):
@@ -58,7 +57,7 @@ class ReportSerializer(AbstractReportSerializer):
         """Meta class for the ReportSerializer."""
 
         model = Report
-        fields = '__all__'
+        fields = "__all__"
 
 
 class ReportArchiveSerializer(AbstractReportSerializer):
@@ -68,4 +67,4 @@ class ReportArchiveSerializer(AbstractReportSerializer):
         """Meta class for the ReportArchiveSerializer."""
 
         model = ReportArchive
-        fields = '__all__'
+        fields = "__all__"

@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-
 """config URL Configuration.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
@@ -31,16 +30,16 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 
 """
-
-from django.conf.urls import include, url
+from django.conf.urls import include
+from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.urls import path
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    url(r'^api/marketplace/v1/', include('api.urls')),
-    path('', include('django_prometheus.urls')),
+    path("admin/", admin.site.urls),
+    url(r"^api/marketplace/v1/", include("api.urls")),
+    path("", include("django_prometheus.urls")),
 ]
 
 urlpatterns += staticfiles_urlpatterns()
