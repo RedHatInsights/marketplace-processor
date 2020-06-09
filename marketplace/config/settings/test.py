@@ -19,8 +19,8 @@
 from .base import *  # noqa: F401,F403
 from .env import ENVIRONMENT
 
-DEBUG = ENVIRONMENT.bool('DJANGO_DEBUG', default=False)
-SECRET_KEY = ENVIRONMENT.get_value('DJANGO_SECRET_KEY', default='test')
-TEST_RUNNER = 'django.test.runner.DiscoverRunner'
+DEBUG = ENVIRONMENT.bool("DJANGO_DEBUG", default=False)
+SECRET_KEY = ENVIRONMENT.get_value("DJANGO_SECRET_KEY", default="test")
+TEST_RUNNER = "django.test.runner.DiscoverRunner"
 
-LOGGING['handlers']['console']['level'] = 'ERROR'
+LOGGING["handlers"]["console"]["level"] = "ERROR"

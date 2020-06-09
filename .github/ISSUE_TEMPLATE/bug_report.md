@@ -22,5 +22,3 @@ ___
 
 - [ ] Verify that users can X Y Z
 - [ ] Verify that an expected error is encountered when a user does A B C
-
-

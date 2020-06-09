@@ -27,8 +27,7 @@ GARBAGE_COLLECTION_LOOP = asyncio.new_event_loop()
 PROCESSOR_INSTANCES = []  # this list holds processor instances that have kafka components
 
 
-def format_message(prefix, message, account_number=None,
-                   report_platform_id=None):
+def format_message(prefix, message, account_number=None, report_platform_id=None):
     """Format log messages in a consistent way.
 
     :param prefix: (str) A meaningful prefix to be displayed in all caps.
@@ -38,46 +37,40 @@ def format_message(prefix, message, account_number=None,
     :returns: (str) containing formatted message
     """
     if not report_platform_id and not account_number:
-        actual_message = 'Report %s - %s' % (prefix, message)
+        actual_message = f"Report {prefix} - {message}"
     elif account_number and not report_platform_id:
-        actual_message = 'Report(account=%s) %s - %s' % (account_number, prefix, message)
+        actual_message = f"Report(account={account_number}) {prefix} - {message}"
     else:
-        actual_message = 'Report(account=%s, report_platform_id=%s) %s - %s' % (
-            account_number,
-            report_platform_id, prefix,
-            message)
+        actual_message = "Report(account={}, report_platform_id={}) {} - {}".format(
+            account_number, report_platform_id, prefix, message
+        )
 
     return actual_message
 
 
 def stop_all_event_loops():
     """Stop all of the event loops."""
-    prefix = 'STOPPING EVENT LOOPS'
+    prefix = "STOPPING EVENT LOOPS"
     for i in PROCESSOR_INSTANCES:
         try:
             # the only processor with a consumer is the ReportConsumer
             # so we check the class and stop the consumer if we have a
             # ReportConsumer instance - otherwise we stop a producer
-            if i.__class__.__name__ == 'ReportConsumer':
+            if i.__class__.__name__ == "ReportConsumer":
                 i.consumer.stop()
             else:
                 i.producer.stop()
         except Exception as err:  # pylint:disable=broad-except
-            LOG.error(format_message(
-                prefix, 'The following error occurred: %s' % err))
+            LOG.error(format_message(prefix, "The following error occurred: %s" % err))
     try:
-        LOG.error(format_message(
-            prefix,
-            'A fatal error occurred. Shutting down all processors: '))
-        LOG.info(format_message(prefix, 'Shutting down the report consumer.'))
+        LOG.error(format_message(prefix, "A fatal error occurred. Shutting down all processors: "))
+        LOG.info(format_message(prefix, "Shutting down the report consumer."))
         UPLOAD_REPORT_CONSUMER_LOOP.stop()
-        LOG.info(format_message(prefix, 'Shutting down the report processor.'))
+        LOG.info(format_message(prefix, "Shutting down the report processor."))
         REPORT_PROCESSING_LOOP.stop()
-        LOG.info(format_message(prefix, 'Shutting down the report slice processor.'))
+        LOG.info(format_message(prefix, "Shutting down the report slice processor."))
         SLICE_PROCESSING_LOOP.stop()
-        LOG.info(format_message(prefix, 'Shutting down the garbage collector.'))
+        LOG.info(format_message(prefix, "Shutting down the garbage collector."))
         GARBAGE_COLLECTION_LOOP.stop()
     except Exception as err:  # pylint: disable=broad-except
-        LOG.error(format_message(
-            prefix,
-            str(err)))
+        LOG.error(format_message(prefix, str(err)))

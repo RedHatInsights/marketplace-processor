@@ -14,18 +14,16 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 """Describes the urls and patterns for the API application."""
-from django.conf.urls import include, url
+from django.conf.urls import include
+from django.conf.urls import url
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from rest_framework.routers import DefaultRouter
 
-from api.views import (status)
+from api.views import status
 
 ROUTER = DefaultRouter()
 
 # pylint: disable=invalid-name
-urlpatterns = [
-    url(r'^status/$', status, name='server-status'),
-    url(r'^', include(ROUTER.urls))
-]
+urlpatterns = [url(r"^status/$", status, name="server-status"), url(r"^", include(ROUTER.urls))]
 
 urlpatterns += staticfiles_urlpatterns()
