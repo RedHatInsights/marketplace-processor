@@ -15,7 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 """ReportConsumer class for saving & acking uploaded messages."""
-
 import asyncio
 import json
 import logging
@@ -25,29 +24,27 @@ from datetime import datetime
 import pytz
 from aiokafka import AIOKafkaConsumer
 from kafka.errors import ConnectionError as KafkaConnectionError
-from processor.processor_utils import (PROCESSOR_INSTANCES,
-                                       UPLOAD_REPORT_CONSUMER_LOOP,
-                                       format_message,
-                                       stop_all_event_loops)
 from prometheus_client import Counter
 
 from api.models import Report
 from api.serializers import ReportSerializer
 from config.settings.base import INSIGHTS_KAFKA_ADDRESS
+from processor.processor_utils import format_message
+from processor.processor_utils import PROCESSOR_INSTANCES
+from processor.processor_utils import stop_all_event_loops
+from processor.processor_utils import UPLOAD_REPORT_CONSUMER_LOOP
 
 LOG = logging.getLogger(__name__)
 
 REPORT_PENDING_QUEUE = asyncio.Queue()
-MKT_TOPIC = 'platform.upload.mkt'
+MKT_TOPIC = "platform.upload.mkt"
 
-MSG_UPLOADS = Counter('marketplace_message_uploads',
-                      'Number of messages uploaded to mkt topic',
-                      ['account_number'])
+MSG_UPLOADS = Counter("marketplace_message_uploads", "Number of messages uploaded to mkt topic", ["account_number"])
 
 
-KAFKA_ERRORS = Counter('marketplace_kafka_errors', 'Number of Kafka errors')
-DB_ERRORS = Counter('marketplace_db_errors', 'Number of db errors')
-OBJECTSTORE_ERRORS = Counter('marketplace_objectstore_errors', 'Number of objectstore errors')
+KAFKA_ERRORS = Counter("marketplace_kafka_errors", "Number of Kafka errors")
+DB_ERRORS = Counter("marketplace_db_errors", "Number of db errors")
+OBJECTSTORE_ERRORS = Counter("marketplace_objectstore_errors", "Number of objectstore errors")
 
 
 class MKTReportException(Exception):
@@ -73,19 +70,21 @@ class KafkaMsgHandlerError(Exception):
     pass
 
 
-class ReportConsumer():
+class ReportConsumer:
     """Class for saving and acking uploaded reports."""
 
     def __init__(self):
         """Create a report consumer."""
         self.should_run = True
-        self.prefix = 'REPORT CONSUMER'
+        self.prefix = "REPORT CONSUMER"
         self.account_number = None
         self.upload_message = None
         self.consumer = AIOKafkaConsumer(
             MKT_TOPIC,
-            loop=UPLOAD_REPORT_CONSUMER_LOOP, bootstrap_servers=INSIGHTS_KAFKA_ADDRESS,
-            group_id='mkt-group', enable_auto_commit=False
+            loop=UPLOAD_REPORT_CONSUMER_LOOP,
+            bootstrap_servers=INSIGHTS_KAFKA_ADDRESS,
+            group_id="mkt-group",
+            enable_auto_commit=False,
         )
 
     @KAFKA_ERRORS.count_exceptions()
@@ -98,11 +97,11 @@ class ReportConsumer():
         loop.create_task(self.loop_save_message_and_ack())
 
         try:
-            log_message = 'Upload report listener started.  Waiting for messages...'
+            log_message = "Upload report listener started.  Waiting for messages..."
             loop.run_until_complete(self.listen_for_messages(REPORT_PENDING_QUEUE, log_message))
         except KafkaMsgHandlerError as err:
             KAFKA_ERRORS.inc()
-            LOG.info('Stopping kafka worker thread.  Error: %s', str(err))
+            LOG.info("Stopping kafka worker thread.  Error: %s", str(err))
         except Exception:  # pylint: disable=broad-except
             pass
 
@@ -114,80 +113,79 @@ class ReportConsumer():
 
     async def save_message_and_ack(self, consumer_record):
         """Save and ack the uploaded kafka message."""
-        self.prefix = 'SAVING MESSAGE'
+        self.prefix = "SAVING MESSAGE"
         if consumer_record.topic == MKT_TOPIC:
             try:
                 missing_fields = []
                 self.upload_message = self.unpack_consumer_record(consumer_record)
                 # rh_account is being deprecated so we use it as a backup if
                 # account is not there
-                rh_account = self.upload_message.get('rh_account')
-                request_id = self.upload_message.get('request_id')
-                self.account_number = self.upload_message.get('account', rh_account)
+                rh_account = self.upload_message.get("rh_account")
+                request_id = self.upload_message.get("request_id")
+                self.account_number = self.upload_message.get("account", rh_account)
                 if not self.account_number:
-                    missing_fields.append('account')
+                    missing_fields.append("account")
                 if not request_id:
-                    missing_fields.append('request_id')
+                    missing_fields.append("request_id")
                 if missing_fields:
                     raise MKTKafkaMsgException(
                         format_message(
-                            self.prefix,
-                            'Message missing required field(s): %s.' % ', '.join(missing_fields)))
+                            self.prefix, "Message missing required field(s): %s." % ", ".join(missing_fields)
+                        )
+                    )
                 try:
                     uploaded_report = {
-                        'upload_srv_kafka_msg': json.dumps(self.upload_message),
-                        'account': self.account_number,
-                        'request_id': request_id,
-                        'state': Report.NEW,
-                        'state_info': json.dumps([Report.NEW]),
-                        'last_update_time': datetime.now(pytz.utc),
-                        'arrival_time': datetime.now(pytz.utc),
-                        'retry_count': 0
+                        "upload_srv_kafka_msg": json.dumps(self.upload_message),
+                        "account": self.account_number,
+                        "request_id": request_id,
+                        "state": Report.NEW,
+                        "state_info": json.dumps([Report.NEW]),
+                        "last_update_time": datetime.now(pytz.utc),
+                        "arrival_time": datetime.now(pytz.utc),
+                        "retry_count": 0,
                     }
                     report_serializer = ReportSerializer(data=uploaded_report)
                     report_serializer.is_valid(raise_exception=True)
                     report_serializer.save()
                     MSG_UPLOADS.labels(account_number=self.account_number).inc()
-                    LOG.info(format_message(
-                        self.prefix, 'Upload service message saved. Ready for processing.'))
+                    LOG.info(format_message(self.prefix, "Upload service message saved. Ready for processing."))
                     await self.consumer.commit()
                 except Exception as error:  # pylint: disable=broad-except
                     DB_ERRORS.inc()
-                    LOG.error(format_message(
-                        self.prefix,
-                        'The following error occurred while trying to save and '
-                        'commit the message: %s' % error))
+                    LOG.error(
+                        format_message(
+                            self.prefix,
+                            "The following error occurred while trying to save and " "commit the message: %s" % error,
+                        )
+                    )
                     stop_all_event_loops()
             except MKTKafkaMsgException as message_error:
-                LOG.error(format_message(
-                    self.prefix, 'Error processing records.  Message: %s, Error: %s' %
-                    (consumer_record, message_error)))
+                LOG.error(
+                    format_message(
+                        self.prefix, f"Error processing records.  Message: {consumer_record}, Error: {message_error}"
+                    )
+                )
                 await self.consumer.commit()
         else:
-            LOG.debug(format_message(
-                self.prefix, 'Message not on %s topic: %s' % (MKT_TOPIC, consumer_record)))
+            LOG.debug(format_message(self.prefix, f"Message not on {MKT_TOPIC} topic: {consumer_record}"))
 
     def unpack_consumer_record(self, consumer_record):
         """Decode the uploaded message and return it in JSON format."""
-        self.prefix = 'NEW REPORT UPLOAD'
+        self.prefix = "NEW REPORT UPLOAD"
         try:
-            json_message = json.loads(consumer_record.value.decode('utf-8'))
-            message = 'received on %s topic' % consumer_record.topic
+            json_message = json.loads(consumer_record.value.decode("utf-8"))
+            message = "received on %s topic" % consumer_record.topic
             # rh_account is being deprecated so we use it as a backup if
             # account is not there
-            rh_account = json_message.get('rh_account')
-            self.account_number = json_message.get('account', rh_account)
-            LOG.info(format_message(self.prefix,
-                                    message,
-                                    account_number=self.account_number))
-            LOG.debug(format_message(
-                self.prefix,
-                'Message: %s' % str(consumer_record),
-                account_number=self.account_number))
+            rh_account = json_message.get("rh_account")
+            self.account_number = json_message.get("account", rh_account)
+            LOG.info(format_message(self.prefix, message, account_number=self.account_number))
+            LOG.debug(
+                format_message(self.prefix, "Message: %s" % str(consumer_record), account_number=self.account_number)
+            )
             return json_message
         except ValueError:
-            raise MKTKafkaMsgException(format_message(
-                self.prefix, 'Upload service message not JSON.'))
+            raise MKTKafkaMsgException(format_message(self.prefix, "Upload service message not JSON."))
 
     @KAFKA_ERRORS.count_exceptions()
     async def listen_for_messages(self, async_queue, log_message):
@@ -203,11 +201,10 @@ class ReportConsumer():
         except KafkaConnectionError:
             KAFKA_ERRORS.inc()
             stop_all_event_loops()
-            raise KafkaMsgHandlerError('Unable to connect to kafka server.  Closing consumer.')
+            raise KafkaMsgHandlerError("Unable to connect to kafka server.  Closing consumer.")
         except Exception as err:  # pylint: disable=broad-except
             KAFKA_ERRORS.inc()
-            LOG.error(format_message(
-                self.prefix, 'The following error occurred: %s' % err))
+            LOG.error(format_message(self.prefix, "The following error occurred: %s" % err))
             stop_all_event_loops()
 
         LOG.info(log_message)
@@ -217,8 +214,7 @@ class ReportConsumer():
                 await async_queue.put(msg)
         except Exception as err:  # pylint: disable=broad-except
             KAFKA_ERRORS.inc()
-            LOG.error(format_message(
-                self.prefix, 'The following error occurred: %s' % err))
+            LOG.error(format_message(self.prefix, "The following error occurred: %s" % err))
             stop_all_event_loops()
         finally:
             # Will leave consumer group; perform autocommit if enabled.
@@ -240,6 +236,7 @@ def initialize_upload_report_consumer():  # pragma: no cover
     :returns None
     """
     event_loop_thread = threading.Thread(
-        target=create_upload_report_consumer_loop, args=(UPLOAD_REPORT_CONSUMER_LOOP,))
+        target=create_upload_report_consumer_loop, args=(UPLOAD_REPORT_CONSUMER_LOOP,)
+    )
     event_loop_thread.daemon = True
     event_loop_thread.start()

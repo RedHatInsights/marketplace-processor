@@ -15,20 +15,20 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 """Garbage Collection loop."""
-
 import asyncio
 import logging
 import threading
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
 import pytz
-from processor.processor_utils import (GARBAGE_COLLECTION_LOOP,
-                                       format_message)
-from processor.report_consumer import DB_ERRORS
 
 from api.models import ReportArchive
-from config.settings.base import (ARCHIVE_RECORD_RETENTION_PERIOD,
-                                  GARBAGE_COLLECTION_INTERVAL)
+from config.settings.base import ARCHIVE_RECORD_RETENTION_PERIOD
+from config.settings.base import GARBAGE_COLLECTION_INTERVAL
+from processor.processor_utils import format_message
+from processor.processor_utils import GARBAGE_COLLECTION_LOOP
+from processor.report_consumer import DB_ERRORS
 
 LOG = logging.getLogger(__name__)
 # this is how often we want garbage collection to run
@@ -38,13 +38,13 @@ GARBAGE_COLLECTION_INTERVAL = int(GARBAGE_COLLECTION_INTERVAL)
 ARCHIVE_RECORD_RETENTION_PERIOD = int(ARCHIVE_RECORD_RETENTION_PERIOD)
 
 
-class GarbageCollector():
+class GarbageCollector:
     """Class for deleting archived reports & associated slices."""
 
     def __init__(self):
         """Initialize a garbage collector."""
         self.should_run = True
-        self.prefix = 'GARBAGE COLLECTING'
+        self.prefix = "GARBAGE COLLECTING"
 
     async def run(self):
         """Run the garbage collector in a loop.
@@ -57,9 +57,10 @@ class GarbageCollector():
             LOG.info(
                 format_message(
                     self.prefix,
-                    'Going to sleep. '
-                    'Will check again for outdated archives in %s seconds.'
-                    % int(GARBAGE_COLLECTION_INTERVAL)))
+                    "Going to sleep. "
+                    "Will check again for outdated archives in %s seconds." % int(GARBAGE_COLLECTION_INTERVAL),
+                )
+            )
             await asyncio.sleep(GARBAGE_COLLECTION_INTERVAL)
 
     @DB_ERRORS.count_exceptions()
@@ -69,24 +70,21 @@ class GarbageCollector():
         created_time_limit = current_time - timedelta(seconds=ARCHIVE_RECORD_RETENTION_PERIOD)
         # we only have to delete the archived reports because deleting an archived report deletes
         # all of the associated archived report slices
-        outdated_report_archives = ReportArchive.objects.filter(
-            processing_end_time__lte=created_time_limit)
+        outdated_report_archives = ReportArchive.objects.filter(processing_end_time__lte=created_time_limit)
         if outdated_report_archives:
             _, deleted_info = outdated_report_archives.delete()
-            report_total = deleted_info.get('api.ReportArchive')
-            report_slice_total = deleted_info.get('api.ReportSliceArchive')
-            LOG.info(format_message(
-                self.prefix,
-                'Deleted %s archived report(s) & '
-                '%s archived report slice(s) older than %s seconds.' %
-                (report_total, report_slice_total, int(ARCHIVE_RECORD_RETENTION_PERIOD))))
-        else:
+            report_total = deleted_info.get("api.ReportArchive")
+            report_slice_total = deleted_info.get("api.ReportSliceArchive")
             LOG.info(
                 format_message(
                     self.prefix,
-                    'No archived reports to delete.'
+                    "Deleted %s archived report(s) & "
+                    "%s archived report slice(s) older than %s seconds."
+                    % (report_total, report_slice_total, int(ARCHIVE_RECORD_RETENTION_PERIOD)),
                 )
             )
+        else:
+            LOG.info(format_message(self.prefix, "No archived reports to delete."))
 
 
 def asyncio_garbage_collection_thread(loop):  # pragma: no cover
@@ -114,7 +112,6 @@ def initialize_garbage_collection_loop():  # pragma: no cover
     :param None
     :returns None
     """
-    event_loop_thread = threading.Thread(target=asyncio_garbage_collection_thread,
-                                         args=(GARBAGE_COLLECTION_LOOP,))
+    event_loop_thread = threading.Thread(target=asyncio_garbage_collection_thread, args=(GARBAGE_COLLECTION_LOOP,))
     event_loop_thread.daemon = True
     event_loop_thread.start()

@@ -8,9 +8,7 @@
 # along with this software; if not, see
 # https://www.gnu.org/licenses/gpl-3.0.txt.
 #
-
 """Model for report progress."""
-
 from django.db import models
 
 
@@ -27,39 +25,32 @@ class AbstractReport(models.Model):
     git_commit = models.CharField(max_length=50, null=True)
     ready_to_archive = models.BooleanField(null=False, default=False)
 
-    NEW = 'new'
-    STARTED = 'started'
-    DOWNLOADED = 'downloaded'
-    FAILED_DOWNLOAD = 'failed to download'
-    VALIDATED = 'validated'
-    FAILED_VALIDATION = 'failed validation'
-    VALIDATION_REPORTED = 'validation reported'
-    FAILED_VALIDATION_REPORTING = 'failed to report validation'
-    STATE_CHOICES = ((NEW, NEW),
-                     (STARTED, STARTED),
-                     (DOWNLOADED, DOWNLOADED),
-                     (FAILED_DOWNLOAD, FAILED_DOWNLOAD),
-                     (VALIDATED, VALIDATED),
-                     (FAILED_VALIDATION, FAILED_VALIDATION),
-                     (VALIDATION_REPORTED, VALIDATION_REPORTED),
-                     (FAILED_VALIDATION_REPORTING, FAILED_VALIDATION_REPORTING))
-
-    state = models.CharField(
-        max_length=28,
-        choices=STATE_CHOICES,
-        default=NEW
+    NEW = "new"
+    STARTED = "started"
+    DOWNLOADED = "downloaded"
+    FAILED_DOWNLOAD = "failed to download"
+    VALIDATED = "validated"
+    FAILED_VALIDATION = "failed validation"
+    VALIDATION_REPORTED = "validation reported"
+    FAILED_VALIDATION_REPORTING = "failed to report validation"
+    STATE_CHOICES = (
+        (NEW, NEW),
+        (STARTED, STARTED),
+        (DOWNLOADED, DOWNLOADED),
+        (FAILED_DOWNLOAD, FAILED_DOWNLOAD),
+        (VALIDATED, VALIDATED),
+        (FAILED_VALIDATION, FAILED_VALIDATION),
+        (VALIDATION_REPORTED, VALIDATION_REPORTED),
+        (FAILED_VALIDATION_REPORTING, FAILED_VALIDATION_REPORTING),
     )
 
-    TIME = 'time'
-    GIT_COMMIT = 'git commit'
-    RETRY_CHOICES = ((TIME, TIME),
-                     (GIT_COMMIT, GIT_COMMIT))
+    state = models.CharField(max_length=28, choices=STATE_CHOICES, default=NEW)
 
-    retry_type = models.CharField(
-        max_length=10,
-        choices=RETRY_CHOICES,
-        default=TIME
-    )
+    TIME = "time"
+    GIT_COMMIT = "git commit"
+    RETRY_CHOICES = ((TIME, TIME), (GIT_COMMIT, GIT_COMMIT))
+
+    retry_type = models.CharField(max_length=10, choices=RETRY_CHOICES, default=TIME)
 
     state_info = models.TextField(null=True)
     retry_count = models.PositiveSmallIntegerField(null=True)
@@ -70,22 +61,23 @@ class AbstractReport(models.Model):
 
     def __str__(self):
         """Convert to string."""
-        return '{' + 'report_platform_id:{}, '\
-            'source: {}, '\
-            'source_metadata: {}, '\
-            'account: {}, ' \
-            'request_id: {}, '\
-            'upload_ack_status: {}, ' \
-            'upload_srv_kafka_msg: {}, ' \
-            'git_commit: {}, '\
-            'state: {}, '\
-            'state_info: {}, '\
-            'retry_count: {}, '\
-            'retry_type: {}, '\
-            'last_update_time: {}, '\
-            'arrival_time: {}, '\
-            'processing_start_time: {}, '\
-            'processing_end_time: {} '.format(
+        return (
+            "{" + "report_platform_id:{}, "
+            "source: {}, "
+            "source_metadata: {}, "
+            "account: {}, "
+            "request_id: {}, "
+            "upload_ack_status: {}, "
+            "upload_srv_kafka_msg: {}, "
+            "git_commit: {}, "
+            "state: {}, "
+            "state_info: {}, "
+            "retry_count: {}, "
+            "retry_type: {}, "
+            "last_update_time: {}, "
+            "arrival_time: {}, "
+            "processing_start_time: {}, "
+            "processing_end_time: {} ".format(
                 self.report_platform_id,
                 self.source,
                 self.source_metadata,
@@ -101,7 +93,10 @@ class AbstractReport(models.Model):
                 self.last_update_time,
                 self.arrival_time,
                 self.processing_start_time,
-                self.processing_end_time) + '}'
+                self.processing_end_time,
+            )
+            + "}"  # noqa:W503
+        )
 
     class Meta:
         """Metadata for abstract report model."""

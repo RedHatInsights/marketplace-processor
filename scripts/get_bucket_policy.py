@@ -22,13 +22,5 @@ else:
 
 minio_client = Minio(MINIO_ENDPOINT, access_key=MINIO_ACCESS_KEY, secret_key=MINIO_SECRET_KEY, secure=MINIO_SECURE)
 
-# List all object paths in bucket that begin with my-prefixname.
-objects = minio_client.list_objects(MINIO_BUCKET, recursive=True)
-for obj in objects:
-    print(obj.bucket_name, obj.object_name.encode("utf-8"), obj.last_modified, obj.etag, obj.size, obj.content_type)
-
-# List all object paths in bucket that begin with my-prefixname using
-# V2 listing API.
-objects = minio_client.list_objects_v2(MINIO_BUCKET, recursive=True)
-for obj in objects:
-    print(obj.bucket_name, obj.object_name.encode("utf-8"), obj.last_modified, obj.etag, obj.size, obj.content_type)
+policy = minio_client.get_bucket_policy(MINIO_BUCKET)
+print(policy)

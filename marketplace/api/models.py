@@ -14,10 +14,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-
 """API models for import organization."""
 # flake8: noqa
 # pylint: disable=unused-import
+from api.report.model import AbstractReport
+from api.report.model import Report
+from api.report.model import ReportArchive
+from api.report_slice.model import AbstractReportSlice
+from api.report_slice.model import ReportSlice
+from api.report_slice.model import ReportSliceArchive
 from api.status.model import Status
-from api.report.model import AbstractReport, Report, ReportArchive
-from api.report_slice.model import AbstractReportSlice, ReportSlice, ReportSliceArchive

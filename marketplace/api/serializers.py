@@ -14,10 +14,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-
 """API models for import organization."""
 # flake8: noqa
 # pylint: disable=unused-import
+from api.report.serializer import ReportArchiveSerializer
+from api.report.serializer import ReportSerializer
+from api.report_slice.serializer import ReportSliceArchiveSerializer
+from api.report_slice.serializer import ReportSliceSerializer
 from api.status.serializer import StatusSerializer
-from api.report.serializer import ReportSerializer, ReportArchiveSerializer
-from api.report_slice.serializer import ReportSliceSerializer, ReportSliceArchiveSerializer
