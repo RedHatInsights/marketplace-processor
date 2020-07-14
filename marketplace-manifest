@@ -1,4 +1,4 @@
-mgmt_services/marketplace:processor/registry.access.redhat.com/ubi7/python-36:latest
+mgmt_services/marketplace:processor/registry.redhat.io/ubi8/python-36:latest
 mgmt_services/marketplace:processor/python-aiokafka:0.5.2.pipfile
 mgmt_services/marketplace:processor/python-boto3:1.10.40.pipfile
 mgmt_services/marketplace:processor/python-botocore:1.13.50.pipfile
