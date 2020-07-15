@@ -1,5 +1,5 @@
 # marketplace-ubi7
-FROM registry.access.redhat.com/ubi7/python-36:latest
+FROM registry.redhat.io/ubi8/python-36:latest
 
 EXPOSE 8080
 
@@ -26,12 +26,9 @@ LABEL summary="$SUMMARY" \
 
 USER root
 
-RUN INSTALL_PKGS="rh-python36 rh-python36-python-devel rh-python36-python-setuptools rh-python36-python-pip nss_wrapper \
-    httpd24 httpd24-httpd-devel httpd24-mod_ssl httpd24-mod_auth_kerb httpd24-mod_ldap \
-    httpd24-mod_session atlas-devel gcc-gfortran libffi-devel libtool-ltdl enchant \
+RUN INSTALL_PKGS="nss_wrapper \
+    atlas-devel gcc-gfortran libffi-devel libtool-ltdl enchant \
     " && \
-    yum install -y yum-utils && \
-    prepare-yum-repositories rhel-server-rhscl-7-rpms && \
     yum -y --setopt=tsflags=nodocs install $INSTALL_PKGS && \
     rpm -V $INSTALL_PKGS && \
     yum -y clean all --enablerepo='*'
@@ -51,8 +48,7 @@ COPY . ${APP_ROOT}/src
 # - In order to drop the root user, we have to make some directories world
 #   writable as OpenShift default security model is to run the container
 #   under random UID.
-RUN source scl_source enable rh-python36 && \
-    virtualenv ${APP_ROOT} && \
+RUN virtualenv ${APP_ROOT} && \
     chown -R 1001:0 ${APP_ROOT} && \
     fix-permissions ${APP_ROOT} -P && \
     rpm-file-permissions && \
