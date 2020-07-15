@@ -1,8 +1,8 @@
-mgmt_services/marketplace:processor/registry.access.redhat.com/ubi7/python-36:latest
+mgmt_services/marketplace:processor/registry.redhat.io/ubi8/python-36:latest
 mgmt_services/marketplace:processor/python-aiokafka:0.5.2.pipfile
 mgmt_services/marketplace:processor/python-boto3:1.10.40.pipfile
 mgmt_services/marketplace:processor/python-botocore:1.13.50.pipfile
-mgmt_services/marketplace:processor/python-certifi:2020.4.5.2.pipfile
+mgmt_services/marketplace:processor/python-certifi:2020.6.20.pipfile
 mgmt_services/marketplace:processor/python-chardet:3.0.4.pipfile
 mgmt_services/marketplace:processor/python-django:2.2.13.pipfile
 mgmt_services/marketplace:processor/python-django-environ:0.4.5.pipfile
