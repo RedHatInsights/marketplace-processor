@@ -30,7 +30,6 @@ before_script:
 
 script:
   - .travis/check_manifest.sh
-  - pre-commit run --all-files
   - tox
 
 after_success:

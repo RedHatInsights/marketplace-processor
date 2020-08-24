@@ -17,6 +17,8 @@
 """Utilities for all of the processor classes."""
 import asyncio
 import logging
+import sys
+import time
 
 
 LOG = logging.getLogger(__name__)
@@ -72,5 +74,10 @@ def stop_all_event_loops():
         SLICE_PROCESSING_LOOP.stop()
         LOG.info(format_message(prefix, "Shutting down the garbage collector."))
         GARBAGE_COLLECTION_LOOP.stop()
+        testing = len(sys.argv) > 1 and sys.argv[1] == "test"
+        if not testing:
+            LOG.info(format_message(prefix, "Sleeping for 10 minutes to allow for fatal error resolution."))
+            time.sleep(600)
+            exit(-1)
     except Exception as err:  # pylint: disable=broad-except
         LOG.error(format_message(prefix, str(err)))
