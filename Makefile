@@ -71,9 +71,6 @@ clean:
 	rm -rf marketplace/static
 	rm -rf temp/
 
-html:
-	@cd docs; $(MAKE) html
-
 lint:
 	pre-commit run --all-files
 

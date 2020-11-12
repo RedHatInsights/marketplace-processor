@@ -1,0 +1,51 @@
+{
+    "kafka": {
+        "brokers": [
+            {
+                "hostname": "marketplace-env-kafka.clowder-system.svc",
+                "port": 29092
+            }
+        ],
+        "topics": [
+            {
+                "name": "platform.upload.mkt-marketplace-env-clowder-system",
+                "requestedName": "platform.upload.mkt"
+            }
+        ]
+    },
+    "logging": {
+        "cloudwatch": {
+            "accessKeyId": "",
+            "logGroup": "",
+            "region": "",
+            "secretAccessKey": ""
+        },
+        "type": "null"
+    },
+    "metricsPath": "/metrics",
+    "metricsPort": 8080,
+    "objectStore": {
+        "accessKey": "key",
+        "buckets": [
+            {
+                "name": "marketplace-s3",
+                "requestedName": "marketplace-s3"
+            }
+        ],
+        "hostname": "marketplace-env-minio.clowder-system.svc",
+        "port": 9000,
+        "secretKey": "value"
+    },
+    "database": {
+        "name": "dBaseName",
+        "username": "username",
+        "password": "password",
+        "hostname": "hostname",
+        "port": 5432,
+        "pgPass": "testing",
+        "adminUsername": "adminusername",
+        "adminPassword": "adminpassword",
+        "rdsCa": "ca"
+    },
+    "webPort": 3000
+}
