@@ -18,13 +18,24 @@
 from django.test import TestCase
 from django.urls import reverse
 
+from api.status.model import Status
 
 class StatusViewTest(TestCase):
     """Tests the status view."""
 
     def test_status_endpoint(self):
         """Test the status endpoint."""
+        Status.healthy = True
         url = reverse("server-status")
         response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
         json_result = response.json()
         self.assertEqual(json_result["api_version"], 1)
+
+
+    def test_status_endpoint_bad(self):
+        """Test the status endpoint when unhealthy."""
+        Status.healthy = False
+        url = reverse("server-status")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 500)
