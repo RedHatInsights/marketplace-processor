@@ -1,6 +1,6 @@
 #!/bin/bash
 set -x
 
-cd ../../insights-ingress-go/
+cd ../../insights-ingress-go/development/
 . .env
-docker-compose exec kafka kafka-console-consumer --topic=platform.upload.mkt --bootstrap-server=localhost:29092
+docker-compose -f local-dev-start.yml exec kafka kafka-console-consumer --topic=platform.upload.mkt --bootstrap-server=localhost:29092

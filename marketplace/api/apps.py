@@ -68,7 +68,7 @@ class ApiConfig(AppConfig):
         from processor.report_consumer import KAFKA_ERRORS
 
         with KAFKA_ERRORS.count_exceptions():
-            pause_kafka_for_file_upload = ENVIRONMENT.get_value("PAUSE_KAFKA_FOR_FILE_UPLOAD_SERVICE", default=False)
+            pause_kafka_for_file_upload = ENVIRONMENT.bool("PAUSE_KAFKA_FOR_FILE_UPLOAD_SERVICE", default=False)
             if not pause_kafka_for_file_upload:
                 from processor.report_consumer import initialize_upload_report_consumer
 
