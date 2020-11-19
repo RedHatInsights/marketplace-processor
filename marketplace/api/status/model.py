@@ -30,6 +30,8 @@ logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 class Status:
     """A server's status."""
 
+    healthy = True
+
     @property
     def git_commit(self):  # pylint: disable=R0201
         """Collect the build number for the server.
