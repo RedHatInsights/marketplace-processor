@@ -20,6 +20,8 @@ import logging
 import sys
 import time
 
+from api.status.model import Status
+
 
 LOG = logging.getLogger(__name__)
 UPLOAD_REPORT_CONSUMER_LOOP = asyncio.get_event_loop()
@@ -74,6 +76,7 @@ def stop_all_event_loops():
         SLICE_PROCESSING_LOOP.stop()
         LOG.info(format_message(prefix, "Shutting down the garbage collector."))
         GARBAGE_COLLECTION_LOOP.stop()
+        Status.healthy = False
         testing = len(sys.argv) > 1 and sys.argv[1] == "test"
         if not testing:
             LOG.info(format_message(prefix, "Sleeping for 10 minutes to allow for fatal error resolution."))

@@ -32,4 +32,8 @@ def status(request):
     serializer = StatusSerializer(status_info)
     server_info = serializer.data
     server_info["server_address"] = request.META.get("HTTP_HOST", "localhost")
-    return Response(server_info)
+
+    if status_info is status_info.healthy:
+        return Response(server_info)
+
+    return Response(status=500)
