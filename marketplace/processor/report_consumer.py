@@ -29,6 +29,7 @@ from prometheus_client import Counter
 from api.models import Report
 from api.serializers import ReportSerializer
 from config.settings.base import INSIGHTS_KAFKA_ADDRESS
+from config.settings.base import INSIGHTS_KAFKA_TOPIC
 from processor.processor_utils import format_message
 from processor.processor_utils import PROCESSOR_INSTANCES
 from processor.processor_utils import stop_all_event_loops
@@ -37,7 +38,7 @@ from processor.processor_utils import UPLOAD_REPORT_CONSUMER_LOOP
 LOG = logging.getLogger(__name__)
 
 REPORT_PENDING_QUEUE = asyncio.Queue()
-MKT_TOPIC = "platform.upload.mkt"
+MKT_TOPIC = INSIGHTS_KAFKA_TOPIC
 
 MSG_UPLOADS = Counter("marketplace_message_uploads", "Number of messages uploaded to mkt topic", ["account_number"])
 

@@ -180,7 +180,7 @@ tox -e py36 -- processor.tests_report_processor.ReportProcessorTests.test_archiv
 
 To lint the code base:
 ```
-tox -e lint
+make lint
 ```
 
 To check whether or not the product manifest needs to be updated, run the following:

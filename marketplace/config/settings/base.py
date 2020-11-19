@@ -31,6 +31,7 @@ import environ
 from boto3.session import Session
 from botocore.exceptions import ClientError
 
+from .configurator import ConfigFactory
 from .env import ENVIRONMENT
 
 ROOT_DIR = environ.Path(__file__) - 4
@@ -67,18 +68,21 @@ GARBAGE_COLLECTION_INTERVAL = ENVIRONMENT.get_value("GARBAGE_COLLECTION_INTERVAL
 # https://docs.djangoproject.com/en/dev/topics/logging/
 # https://docs.python.org/3.6/library/logging.html
 
+
+configurator = ConfigFactory.get_configurator()
+
 # cloudwatch logging variables
-CW_AWS_ACCESS_KEY_ID = ENVIRONMENT.get_value("CW_AWS_ACCESS_KEY_ID", default=None)
-CW_AWS_SECRET_ACCESS_KEY = ENVIRONMENT.get_value("CW_AWS_SECRET_ACCESS_KEY", default=None)
-CW_AWS_REGION = ENVIRONMENT.get_value("CW_AWS_REGION", default="us-east-1")
-CW_LOG_GROUP = ENVIRONMENT.get_value("CW_LOG_GROUP", default="platform-dev")
+CW_AWS_ACCESS_KEY_ID = configurator.get_cloudwatch_access_id()
+CW_AWS_SECRET_ACCESS_KEY = configurator.get_cloudwatch_access_key()
+CW_AWS_REGION = configurator.get_cloudwatch_region()
+CW_LOG_GROUP = configurator.get_cloudwatch_log_group()
 
 # minio variables
-MINIO_ENDPOINT = ENVIRONMENT.get_value("MINIO_ENDPOINT", default=None)
-MINIO_ACCESS_KEY = ENVIRONMENT.get_value("MINIO_ACCESS_KEY", default=None)
-MINIO_SECRET_KEY = ENVIRONMENT.get_value("MINIO_SECRET_KEY", default=None)
-MINIO_SECURE = ENVIRONMENT.bool("MINIO_SECURE", default=True)
-MINIO_BUCKET = ENVIRONMENT.get_value("MINIO_BUCKET", default="open-marketplace")
+MINIO_ENDPOINT = f"{configurator.get_object_store_host()}:{configurator.get_object_store_port()}"
+MINIO_ACCESS_KEY = configurator.get_object_store_access_key()
+MINIO_SECRET_KEY = configurator.get_object_store_secret_key()
+MINIO_SECURE = configurator.get_object_store_tls()
+MINIO_BUCKET = configurator.get_object_store_bucket()
 
 LOGGING_LEVEL = os.getenv("DJANGO_LOG_LEVEL", "INFO")
 LOGGING_HANDLERS = os.getenv("DJANGO_LOG_HANDLERS", "console").split(",")
@@ -204,12 +208,9 @@ ENGINES = {
 }
 
 SERVICE_NAME = ENVIRONMENT.get_value("DATABASE_SERVICE_NAME", default="").upper().replace("-", "_")
-if SERVICE_NAME:
-    ENGINE = ENGINES.get(ENVIRONMENT.get_value("DATABASE_ENGINE"), ENGINES["postgresql"])
-else:
-    ENGINE = ENGINES["sqlite"]
+ENGINE = ENGINES.get(ENVIRONMENT.get_value("DATABASE_ENGINE", default="postgresql"), ENGINES["postgresql"])
 
-NAME = ENVIRONMENT.get_value("DATABASE_NAME", default=None)
+NAME = configurator.get_database_name()
 
 if not NAME and ENGINE == ENGINES["sqlite"]:
     NAME = os.path.join(APPS_DIR, "db.sqlite3")
@@ -217,16 +218,16 @@ if not NAME and ENGINE == ENGINES["sqlite"]:
 DATABASES = {
     "ENGINE": ENGINE,
     "NAME": NAME,
-    "USER": ENVIRONMENT.get_value("DATABASE_USER", default=None),
-    "PASSWORD": ENVIRONMENT.get_value("DATABASE_PASSWORD", default=None),
-    "HOST": ENVIRONMENT.get_value(f"{SERVICE_NAME}_SERVICE_HOST", default=None),
-    "PORT": ENVIRONMENT.get_value(f"{SERVICE_NAME}_SERVICE_PORT", default=None),
+    "USER": configurator.get_database_user(),
+    "PASSWORD": configurator.get_database_password(),
+    "HOST": configurator.get_database_host(),
+    "PORT": configurator.get_database_port(),
 }
 
 # add ssl cert if specified
-DATABASE_CERT = ENVIRONMENT.get_value("DATABASE_SERVICE_CERT", default=None)
+DATABASE_CERT = configurator.get_database_ca()
 if DATABASE_CERT:
-    CERT_FILE = "/etc/ssl/certs/server.pem"
+    CERT_FILE = configurator.get_database_ca_file()
     DB_OPTIONS = {"OPTIONS": {"sslmode": "verify-full", "sslrootcert": CERT_FILE}}
     DATABASES.update(DB_OPTIONS)
 
@@ -268,10 +269,13 @@ STATICFILES_DIRS = [os.path.join(APPS_DIR, "static/client")]
 REST_FRAMEWORK = {"DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination", "PAGE_SIZE": 10}
 
 # Insights Kafka messaging address
-INSIGHTS_KAFKA_HOST = os.getenv("INSIGHTS_KAFKA_HOST", "localhost")
+INSIGHTS_KAFKA_HOST = configurator.get_kafka_broker_host()
 
 # Insights Kafka messaging address
-INSIGHTS_KAFKA_PORT = os.getenv("INSIGHTS_KAFKA_PORT", "29092")
+INSIGHTS_KAFKA_PORT = configurator.get_kafka_broker_port()
 
 # Insights Kafka server address
 INSIGHTS_KAFKA_ADDRESS = f"{INSIGHTS_KAFKA_HOST}:{INSIGHTS_KAFKA_PORT}"
+
+# Insights Kafka topic
+INSIGHTS_KAFKA_TOPIC = configurator.get_kafka_topic()
