@@ -33,7 +33,7 @@ def status(request):
     server_info = serializer.data
     server_info["server_address"] = request.META.get("HTTP_HOST", "localhost")
 
-    if status_info is status_info.healthy:
+    if Status.healthy:
         return Response(server_info)
 
     return Response(status=500)
