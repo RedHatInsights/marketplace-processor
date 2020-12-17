@@ -27,7 +27,7 @@ flake8 = "==3.7.9"
 coverage = "==5.0"
 codecov = "==2.0.17"
 requests-mock = "==1.7.0"
-tox = "==3.14.2"
+tox = "==3.20.1"
 pre-commit = ">=2.0"
 
 [requires]
