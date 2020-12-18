@@ -131,3 +131,5 @@ dmypy.json
 
 #temp files
 temp/
+
+scripts/config/.upload_env

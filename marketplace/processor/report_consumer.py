@@ -46,6 +46,10 @@ MSG_UPLOADS = Counter("marketplace_message_uploads", "Number of messages uploade
 KAFKA_ERRORS = Counter("marketplace_kafka_errors", "Number of Kafka errors")
 DB_ERRORS = Counter("marketplace_db_errors", "Number of db errors")
 OBJECTSTORE_ERRORS = Counter("marketplace_objectstore_errors", "Number of objectstore errors")
+INVALID_UPLOADS = Counter("marketplace_invalid_uploads", "Number of invalid uploads")
+NONJSON_UPLOADS = Counter("marketplace_invalid_content_uploads", "Number of uploads with invalid content")
+UPLOAD_EXTRACT_RETRIES = Counter("marketplace_upload_extract_retries", "Number of retries errors extracting uploads")
+UPLOAD_EXTRACT_FAILS = Counter("marketplace_upload_extract_failures", "Number of failures extracting uploads")
 
 
 class MKTReportException(Exception):
