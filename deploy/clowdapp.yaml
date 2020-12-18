@@ -22,62 +22,63 @@ objects:
     name: marketplace
   spec:
     envName: ${ENV_NAME}
-    pods:
+    deployments:
     - name: service
-      image: ${IMAGE}:${IMAGE_TAG}
       minReplicas: ${{MIN_REPLICAS}}
-      livenessProbe:
-        failureThreshold: 3
-        httpGet:
-          path: /api/marketplace/v1/status/
-          port: 8080
-          scheme: HTTP
-        initialDelaySeconds: 35
-        periodSeconds: 5
-        successThreshold: 1
-        timeoutSeconds: 120
-      readinessProbe:
-        failureThreshold: 3
-        httpGet:
-          path: /api/marketplace/v1/status/
-          port: 8080
-          scheme: HTTP
-        initialDelaySeconds: 35
-        periodSeconds: 5
-        successThreshold: 1
-        timeoutSeconds: 120
-      env:
-      - name: DJANGO_SECRET_KEY
-        valueFrom:
-          secretKeyRef:
-            key: django-secret-key
-            name: marketplace-secret
-            optional: false
-      - name: MARKETPLACE_BUCKET
-        value: ${MARKETPLACE_BUCKET}
-      - name: RETRIES_ALLOWED
-        value: ${RETRIES_ALLOWED}
-      - name: PAUSE_KAFKA_FOR_FILE_UPLOAD_SERVICE
-        value: ${PAUSE_KAFKA_FOR_FILE_UPLOAD_SERVICE}
-      - name: NEW_REPORT_QUERY_INTERVAL
-        value: ${NEW_REPORT_QUERY_INTERVAL}
-      - name: CLOWDER_ENABLED
-        value: ${CLOWDER_ENABLED}
-      resources:
-        limits:
-          cpu: ${{CPU_LIMIT}}
-          memory: ${MEMORY_LIMIT}
-        requests:
-          cpu: 500m
-          memory: 512Mi
       web: true
-      volumes:
-      - name: marketplace-tmp
-        persistentVolumeClaim:
-          claimName: marketplace-tmp-claim
-      volumeMounts:
-      - name: marketplace-tmp
-        mountPath: "/tmp"
+      podSpec:
+        image: ${IMAGE}:${IMAGE_TAG}
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /api/marketplace/v1/status/
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 35
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 120
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /api/marketplace/v1/status/
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 35
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 120
+        env:
+        - name: DJANGO_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              key: django-secret-key
+              name: marketplace-secret
+              optional: false
+        - name: MARKETPLACE_BUCKET
+          value: ${MARKETPLACE_BUCKET}
+        - name: RETRIES_ALLOWED
+          value: ${RETRIES_ALLOWED}
+        - name: PAUSE_KAFKA_FOR_FILE_UPLOAD_SERVICE
+          value: ${PAUSE_KAFKA_FOR_FILE_UPLOAD_SERVICE}
+        - name: NEW_REPORT_QUERY_INTERVAL
+          value: ${NEW_REPORT_QUERY_INTERVAL}
+        - name: CLOWDER_ENABLED
+          value: ${CLOWDER_ENABLED}
+        resources:
+          limits:
+            cpu: ${{CPU_LIMIT}}
+            memory: ${MEMORY_LIMIT}
+          requests:
+            cpu: 500m
+            memory: 512Mi
+        volumes:
+        - name: marketplace-tmp
+          persistentVolumeClaim:
+            claimName: marketplace-tmp-claim
+        volumeMounts:
+        - name: marketplace-tmp
+          mountPath: "/tmp"
     objectStore:
     - ${MARKETPLACE_BUCKET}
     kafkaTopics:

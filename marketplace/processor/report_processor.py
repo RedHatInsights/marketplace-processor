@@ -46,9 +46,13 @@ from processor.processor_utils import PROCESSOR_INSTANCES
 from processor.processor_utils import REPORT_PROCESSING_LOOP
 from processor.processor_utils import stop_all_event_loops
 from processor.report_consumer import DB_ERRORS
+from processor.report_consumer import INVALID_UPLOADS
 from processor.report_consumer import KAFKA_ERRORS
 from processor.report_consumer import KafkaMsgHandlerError
 from processor.report_consumer import MKTReportException
+from processor.report_consumer import NONJSON_UPLOADS
+from processor.report_consumer import UPLOAD_EXTRACT_FAILS
+from processor.report_consumer import UPLOAD_EXTRACT_RETRIES
 
 LOG = logging.getLogger(__name__)
 VALIDATION_TOPIC = "platform.upload.validation"
@@ -641,6 +645,7 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
                     return options
 
                 except ValueError as error:
+                    NONJSON_UPLOADS.inc()
                     raise FailExtractException(
                         format_message(
                             self.prefix,
@@ -648,6 +653,7 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
                             account_number=self.account_number,
                         )
                     )
+            INVALID_UPLOADS.inc()
             raise FailExtractException(
                 format_message(
                     self.prefix,
@@ -658,12 +664,14 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
         except FailExtractException as mkt_err:
             raise mkt_err
         except tarfile.ReadError as err:
+            UPLOAD_EXTRACT_FAILS.inc()
             raise FailExtractException(
                 format_message(
                     self.prefix, "Unexpected error reading tar.gz: %s" % str(err), account_number=self.account_number
                 )
             )
         except Exception as err:
+            UPLOAD_EXTRACT_RETRIES.inc()
             raise RetryExtractException(
                 format_message(
                     self.prefix, "Unexpected error reading tar.gz: %s" % str(err), account_number=self.account_number
