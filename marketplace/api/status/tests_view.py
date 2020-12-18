@@ -20,6 +20,7 @@ from django.urls import reverse
 
 from api.status.model import Status
 
+
 class StatusViewTest(TestCase):
     """Tests the status view."""
 
@@ -31,7 +32,6 @@ class StatusViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         json_result = response.json()
         self.assertEqual(json_result["api_version"], 1)
-
 
     def test_status_endpoint_bad(self):
         """Test the status endpoint when unhealthy."""
