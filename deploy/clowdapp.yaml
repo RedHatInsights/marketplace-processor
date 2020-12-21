@@ -85,6 +85,9 @@ objects:
     - replicas: 3
       partitions: 10
       topicName: platform.upload.mkt
+    - replicas: 3
+      partitions: 10
+      topicName: platform.upload.validation
     dependencies:
     - ingress
     database:
