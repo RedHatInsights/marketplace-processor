@@ -27,7 +27,7 @@ import pytz
 import requests
 from aiokafka import AIOKafkaProducer
 from django.db import transaction
-from kafka.errors import ConnectionError as KafkaConnectionError
+from kafka.errors import  KafkaConnectionError
 
 from api.models import Report
 from api.models import ReportSlice

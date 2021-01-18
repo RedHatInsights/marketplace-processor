@@ -4,18 +4,6 @@ kind: Template
 metadata:
   name: marketplace
 objects:
-- apiVersion: v1
-  kind: PersistentVolumeClaim
-  metadata:
-    name: marketplace-tmp-claim
-    labels:
-      app: marketplace
-  spec:
-    accessModes:
-    - ReadWriteOnce
-    resources:
-      requests:
-        storage: "${VOLUME_CAPACITY}"
 - apiVersion: cloud.redhat.com/v1alpha1
   kind: ClowdApp
   metadata:
@@ -72,19 +60,15 @@ objects:
           requests:
             cpu: 500m
             memory: 512Mi
-        volumes:
-        - name: marketplace-tmp
-          persistentVolumeClaim:
-            claimName: marketplace-tmp-claim
-        volumeMounts:
-        - name: marketplace-tmp
-          mountPath: "/tmp"
     objectStore:
     - ${MARKETPLACE_BUCKET}
     kafkaTopics:
     - replicas: 3
       partitions: 10
       topicName: platform.upload.mkt
+    - replicas: 3
+      partitions: 10
+      topicName: platform.upload.validation
     dependencies:
     - ingress
     database:
