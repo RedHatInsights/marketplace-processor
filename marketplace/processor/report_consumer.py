@@ -23,7 +23,7 @@ from datetime import datetime
 
 import pytz
 from aiokafka import AIOKafkaConsumer
-from kafka.errors import ConnectionError as KafkaConnectionError
+from kafka.errors import  KafkaConnectionError
 from prometheus_client import Counter
 
 from api.models import Report
