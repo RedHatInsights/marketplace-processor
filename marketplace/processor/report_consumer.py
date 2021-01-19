@@ -23,6 +23,7 @@ from datetime import datetime
 
 import pytz
 from aiokafka import AIOKafkaConsumer
+from kafka.errors import KafkaError
 from kafka.errors import  KafkaConnectionError
 from prometheus_client import Counter
 
@@ -155,6 +156,15 @@ class ReportConsumer:
                     MSG_UPLOADS.labels(account_number=self.account_number).inc()
                     LOG.info(format_message(self.prefix, "Upload service message saved. Ready for processing."))
                     await self.consumer.commit()
+                except KafkaError as kerror:
+                    KAFKA_ERRORS.inc()
+                    LOG.error(
+                        format_message(
+                            self.prefix,
+                            "The following error occurred while trying to save and " "commit the message: %s" % kerror,
+                        )
+                    )
+                    stop_all_event_loops()    
                 except Exception as error:  # pylint: disable=broad-except
                     DB_ERRORS.inc()
                     LOG.error(
