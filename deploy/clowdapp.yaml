@@ -72,8 +72,7 @@ objects:
     dependencies:
     - ingress
     database:
-      name: marketplace-db
-      version: 10
+      name: marketplace
 
 parameters:
 - name: MARKETPLACE_BUCKET
