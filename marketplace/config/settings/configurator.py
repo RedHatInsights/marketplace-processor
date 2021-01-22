@@ -22,7 +22,7 @@ from .env import ENVIRONMENT
 
 CLOWDER_ENABLED = ENVIRONMENT.bool("CLOWDER_ENABLED", default=False)
 if CLOWDER_ENABLED:
-    from app_common_python import LoadedConfig, KafkaTopics, ObjectBuckets, SmartAppConfig
+    from app_common_python import LoadedConfig, KafkaTopics, ObjectBuckets
 
 
 class Configurator:
@@ -345,8 +345,9 @@ class ClowderConfigurator(Configurator):
     @staticmethod
     def get_database_ca_file():
         """Obtain database ca file."""
-        return SmartAppConfig(LoadedConfig).rds_ca()
-
+        if LoadedConfig.database.rdsCa:
+           return LoadedConfig.rds_ca()
+        return None
 
 class ConfigFactory:
     """Returns configurator based on mode."""
