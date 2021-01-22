@@ -300,12 +300,16 @@ class ClowderConfigurator(Configurator):
     @staticmethod
     def get_object_store_access_key():
         """Obtain object store access key."""
-        return LoadedConfig.objectStore.accessKey
+        if LoadedConfig.objectStore.accessKey:
+            return LoadedConfig.objectStore.accessKey
+        return LoadedConfig.objectStore.buckets[0].accessKey
 
     @staticmethod
     def get_object_store_secret_key():
         """Obtain object store secret key."""
-        return LoadedConfig.objectStore.secretKey
+        if LoadedConfig.objectStore.secretKey:
+            return LoadedConfig.objectStore.secretKey
+        return LoadedConfig.objectStore.buckets[0].secretKey
 
     @staticmethod
     def get_object_store_bucket():
