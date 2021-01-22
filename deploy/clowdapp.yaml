@@ -85,10 +85,6 @@ parameters:
   value: "5"
 - name: RETRY_TIME
   value: "480"
-- description: Volume space available for data, e.g. 512Mi, 2Gi
-  name: VOLUME_CAPACITY
-  required: true
-  value: 1Gi
 - description: Cpu limit of service
   name: CPU_LIMIT
   value: "1"

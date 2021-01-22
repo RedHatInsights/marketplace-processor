@@ -128,6 +128,15 @@ class Configurator:
         """Obtain database ca file."""
         pass
 
+    @staticmethod
+    def get_metrics_port():
+        """Obtain metrics port."""
+        pass
+
+    @staticmethod
+    def get_metrics_path():
+        """Obtain metrics path."""
+        pass
 
 class EnvConfigurator(Configurator):
     """Returns information based on the environment data"""
@@ -235,6 +244,16 @@ class EnvConfigurator(Configurator):
     def get_database_ca_file():
         """Obtain database ca file."""
         return ENVIRONMENT.get_value("DATABASE_SERVICE_CERTFILE", default="/etc/ssl/certs/server.pem")
+
+    @staticmethod
+    def get_metrics_port():
+        """Obtain metrics port."""
+        return 8080
+
+    @staticmethod
+    def get_metrics_path():
+        """Obtain metrics path."""
+        return "/metrics"
 
 
 class ClowderConfigurator(Configurator):
@@ -352,6 +371,16 @@ class ClowderConfigurator(Configurator):
         if LoadedConfig.database.rdsCa:
            return LoadedConfig.rds_ca()
         return None
+
+    @staticmethod
+    def get_metrics_port():
+        """Obtain metrics port."""
+        return LoadedConfig.metricsPort
+
+    @staticmethod
+    def get_metrics_path():
+        """Obtain metrics path."""
+        return LoadedConfig.metricsPath
 
 class ConfigFactory:
     """Returns configurator based on mode."""
