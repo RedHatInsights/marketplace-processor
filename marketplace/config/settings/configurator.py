@@ -29,6 +29,11 @@ class Configurator:
     """Obtain configuration based on mode."""
 
     @staticmethod
+    def is_clowder_enabled():
+        """Check if clowder is enabled."""
+        return CLOWDER_ENABLED
+
+    @staticmethod
     def get_kafka_broker_host():
         """Obtain kafka broker host address."""
         pass

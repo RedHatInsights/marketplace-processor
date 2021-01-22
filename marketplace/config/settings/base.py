@@ -280,6 +280,7 @@ INSIGHTS_KAFKA_ADDRESS = f"{INSIGHTS_KAFKA_HOST}:{INSIGHTS_KAFKA_PORT}"
 # Insights Kafka topic
 INSIGHTS_KAFKA_TOPIC = configurator.get_kafka_topic()
 
-# Prometheus setup
-PROMETHEUS_METRICS_EXPORT_PORT = configurator.get_metrics_port()
-PROMETHEUS_METRICS_EXPORT_ADDRESS = ''  # all addresses
+if configurator.is_clowder_enabled():
+    # Prometheus setup for Clowder
+    PROMETHEUS_METRICS_EXPORT_PORT = configurator.get_metrics_port()
+    PROMETHEUS_METRICS_EXPORT_ADDRESS = ''  # all addresses
