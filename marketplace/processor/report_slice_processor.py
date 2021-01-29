@@ -89,13 +89,6 @@ class ReportSliceProcessor(AbstractProcessor):  # pylint: disable=too-many-insta
 
     def get_minio_client(self):
         """Create client for handling object store interaction."""
-        LOG.info(f'MINIO_ENDPOINT={MINIO_ENDPOINT}.')
-        LOG.info(f'MINIO_ACCESS_KEY={MINIO_ACCESS_KEY}.')
-        if MINIO_SECRET_KEY:
-            LOG.info(f'MINIO_SECRET_KEY=*******.')
-        else:
-            LOG.info(f'MINIO_SECRET_KEY is falsey.')
-        LOG.info(f'MINIO_SECURE={MINIO_SECURE}.')
         if self.minio_client is None and (MINIO_ENDPOINT and MINIO_ACCESS_KEY and MINIO_SECRET_KEY):
             self.minio_client = Minio(
                 MINIO_ENDPOINT, access_key=MINIO_ACCESS_KEY, secret_key=MINIO_SECRET_KEY, secure=MINIO_SECURE
