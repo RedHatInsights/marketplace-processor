@@ -149,6 +149,12 @@ upload-data:
 		$(INGRESS_URL) \
 		-u $(RH_USERNAME):$(RH_PASSWORD)
 
+upload-proxy-data:
+	curl -vvvv -F "file=@$(file);type=application/vnd.redhat.mkt.tar+tgz" \
+		--proxy ${UPLOAD_PROXY}  \
+		$(INGRESS_URL) \
+		-u $(RH_USERNAME):$(RH_PASSWORD)
+
 manifest:
 	python scripts/create_manifest.py
 

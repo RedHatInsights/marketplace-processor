@@ -76,6 +76,7 @@ CW_AWS_ACCESS_KEY_ID = configurator.get_cloudwatch_access_id()
 CW_AWS_SECRET_ACCESS_KEY = configurator.get_cloudwatch_access_key()
 CW_AWS_REGION = configurator.get_cloudwatch_region()
 CW_LOG_GROUP = configurator.get_cloudwatch_log_group()
+ENABLE_CLOUDWATCH_LOGGING = ENVIRONMENT.bool("ENABLE_CLOUDWATCH_LOGGING", default=True)
 
 # minio variables
 MINIO_ENDPOINT = f"{configurator.get_object_store_host()}:{configurator.get_object_store_port()}"
@@ -88,8 +89,7 @@ LOGGING_LEVEL = os.getenv("DJANGO_LOG_LEVEL", "INFO")
 LOGGING_HANDLERS = os.getenv("DJANGO_LOG_HANDLERS", "console").split(",")
 LOGGING_FORMATTER = os.getenv("DJANGO_LOG_FORMATTER", "simple")
 
-
-if CW_AWS_ACCESS_KEY_ID:
+if CW_AWS_ACCESS_KEY_ID and ENABLE_CLOUDWATCH_LOGGING:
     try:
         POD_NAME = ENVIRONMENT.get_value("APP_POD_NAME", default="local")
         BOTO3_SESSION = Session(
