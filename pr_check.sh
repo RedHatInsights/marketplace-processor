@@ -11,6 +11,7 @@ IQE_PLUGINS="marketplace"
 IQE_MARKER_EXPRESSION="smoke"
 IQE_FILTER_EXPRESSION=""
 
+echo "LABEL quay.expires-after=3d" >> ./Dockerfile # tag expire in 3 days
 
 # Install bonfire repo/initialize
 CICD_URL=https://raw.githubusercontent.com/RedHatInsights/bonfire/master/cicd
