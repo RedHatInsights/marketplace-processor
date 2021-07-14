@@ -3,9 +3,9 @@ mgmt_services/marketplace:processor/python-aiokafka:0.6.0.pipfile
 mgmt_services/marketplace:processor/python-app-common-python:0.1.2.pipfile
 mgmt_services/marketplace:processor/python-boto3:1.10.40.pipfile
 mgmt_services/marketplace:processor/python-botocore:1.13.50.pipfile
-mgmt_services/marketplace:processor/python-certifi:2020.12.5.pipfile
+mgmt_services/marketplace:processor/python-certifi:2021.5.30.pipfile
 mgmt_services/marketplace:processor/python-chardet:3.0.4.pipfile
-mgmt_services/marketplace:processor/python-django:2.2.22.pipfile
+mgmt_services/marketplace:processor/python-django:2.2.24.pipfile
 mgmt_services/marketplace:processor/python-django-environ:0.4.5.pipfile
 mgmt_services/marketplace:processor/python-django-prometheus:1.1.0.pipfile
 mgmt_services/marketplace:processor/python-djangorestframework:3.11.2.pipfile
@@ -17,7 +17,7 @@ mgmt_services/marketplace:processor/python-kafka-python:2.0.2.pipfile
 mgmt_services/marketplace:processor/python-minio:5.0.6.pipfile
 mgmt_services/marketplace:processor/python-prometheus-client:0.7.1.pipfile
 mgmt_services/marketplace:processor/python-psycopg2-binary:2.8.4.pipfile
-mgmt_services/marketplace:processor/python-python-dateutil:2.8.1.pipfile
+mgmt_services/marketplace:processor/python-python-dateutil:2.8.2.pipfile
 mgmt_services/marketplace:processor/python-pytz:2021.1.pipfile
 mgmt_services/marketplace:processor/python-requests:2.22.0.pipfile
 mgmt_services/marketplace:processor/python-s3transfer:0.2.1.pipfile
