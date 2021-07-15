@@ -1,5 +1,5 @@
-# marketplace-ubi7
-FROM registry.redhat.io/ubi8/python-36:latest
+# marketplace-ubi8
+FROM registry.redhat.io/ubi8/python-38:latest
 
 EXPOSE 8080
 
@@ -18,8 +18,8 @@ LABEL summary="$SUMMARY" \
     io.k8s.description="$DESCRIPTION" \
     io.k8s.display-name="Marketplace" \
     io.openshift.expose-services="8080:http" \
-    io.openshift.tags="builder,python,python36,rh-python36" \
-    com.redhat.component="python36-docker" \
+    io.openshift.tags="builder,python,python38,rh-python38" \
+    com.redhat.component="python38-docker" \
     name="Marketplace" \
     version="1" \
     maintainer="Red Hat Cost Management Services"
@@ -42,17 +42,13 @@ COPY openshift/root /
 # Copy application files to the image.
 COPY . ${APP_ROOT}/src
 
-# - Create a Python virtual environment for use by any application to avoid
-#   potential conflicts with Python packages preinstalled in the main Python
-#   installation.
 # - In order to drop the root user, we have to make some directories world
 #   writable as OpenShift default security model is to run the container
 #   under random UID.
-RUN virtualenv ${APP_ROOT} && \
+RUN $STI_SCRIPTS_PATH/assemble && \
     chown -R 1001:0 ${APP_ROOT} && \
     fix-permissions ${APP_ROOT} -P && \
-    rpm-file-permissions && \
-    $STI_SCRIPTS_PATH/assemble
+    rpm-file-permissions
 
 USER 1001
 

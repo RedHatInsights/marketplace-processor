@@ -121,7 +121,7 @@ local-dev-up:
 	clear
 
 local-dev-down:
-	cd ../insights-ingress-go;docker-compose down
+	cd ../insights-ingress-go;docker-compose -f development/local-dev-start.yml down
 	docker-compose down
 	osascript -e 'quit app "iTerm"' | true
 

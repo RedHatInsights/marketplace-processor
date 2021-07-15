@@ -4,7 +4,6 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-aiokafka = "==0.6.0"
 djangorestframework = "==3.11.2"
 Django = "==2.2.24"
 django-environ = "==0.4.5"
@@ -19,6 +18,8 @@ boto3 = "==1.10.40"
 watchtower = "==0.7.3"
 minio = "==5.0.6"
 app-common-python = "==0.1.2"
+confluent-kafka = ">=1.4.1"
+kafka-python = ">=2.0.1"
 
 [dev-packages]
 asynctest = "==0.13.0"

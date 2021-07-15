@@ -143,6 +143,7 @@ class Configurator:
         """Obtain metrics path."""
         pass
 
+
 class EnvConfigurator(Configurator):
     """Returns information based on the environment data"""
 
@@ -374,7 +375,7 @@ class ClowderConfigurator(Configurator):
     def get_database_ca_file():
         """Obtain database ca file."""
         if LoadedConfig.database.rdsCa:
-           return LoadedConfig.rds_ca()
+            return LoadedConfig.rds_ca()
         return None
 
     @staticmethod
@@ -386,6 +387,7 @@ class ClowderConfigurator(Configurator):
     def get_metrics_path():
         """Obtain metrics path."""
         return LoadedConfig.metricsPath
+
 
 class ConfigFactory:
     """Returns configurator based on mode."""

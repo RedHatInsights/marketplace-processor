@@ -15,6 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 """Report Processor."""
+import asyncio
 import json
 import logging
 import tarfile
@@ -22,12 +23,13 @@ import threading
 from datetime import datetime
 from http import HTTPStatus
 from io import BytesIO
+from threading import Thread
 
 import pytz
 import requests
-from aiokafka import AIOKafkaProducer
+from confluent_kafka import KafkaException
+from confluent_kafka import Producer
 from django.db import transaction
-from kafka.errors import  KafkaConnectionError
 
 from api.models import Report
 from api.models import ReportSlice
@@ -48,7 +50,6 @@ from processor.processor_utils import stop_all_event_loops
 from processor.report_consumer import DB_ERRORS
 from processor.report_consumer import INVALID_UPLOADS
 from processor.report_consumer import KAFKA_ERRORS
-from processor.report_consumer import KafkaMsgHandlerError
 from processor.report_consumer import MKTReportException
 from processor.report_consumer import NONJSON_UPLOADS
 from processor.report_consumer import UPLOAD_EXTRACT_FAILS
@@ -86,6 +87,58 @@ class RetryExtractException(Exception):
     pass
 
 
+class AIOProducer:
+    """Class for handing asyncio messages"""
+
+    def __init__(self, configs, loop=None):
+        self._loop = loop or asyncio.get_event_loop()
+        self._producer = Producer(configs)
+        self._cancelled = False
+        self._poll_thread = Thread(target=self._poll_loop)
+        self._poll_thread.start()
+
+    def _poll_loop(self):
+        while not self._cancelled:
+            self._producer.poll(0.1)
+
+    def close(self):
+        self._cancelled = True
+        self._poll_thread.join()
+
+    def send_and_wait(self, topic, value):
+        """
+        An awaitable produce method.
+        """
+        result = self._loop.create_future()
+
+        def ack(err, msg):
+            if err:
+                self._loop.call_soon_threadsafe(result.set_exception, KafkaException(err))
+            else:
+                self._loop.call_soon_threadsafe(result.set_result, msg)
+
+        self._producer.produce(topic, value, on_delivery=ack)
+        return result
+
+    def send_with_callback(self, topic, value, on_delivery):
+        """
+        A produce method in which delivery notifications are made available
+        via both the returned future and on_delivery callback (if specified).
+        """
+        result = self._loop.create_future()
+
+        def ack(err, msg):
+            if err:
+                self._loop.call_soon_threadsafe(result.set_exception, KafkaException(err))
+            else:
+                self._loop.call_soon_threadsafe(result.set_result, msg)
+            if on_delivery:
+                self._loop.call_soon_threadsafe(on_delivery, err, msg)
+
+        self._producer.produce(topic, value, on_delivery=ack)
+        return result
+
+
 class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-attributes
     """Class for processing report that have been created."""
 
@@ -103,7 +156,7 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
         }
         state_metrics = {Report.FAILED_DOWNLOAD: FAILED_TO_DOWNLOAD, Report.FAILED_VALIDATION: FAILED_TO_VALIDATE}
         self.async_states = [Report.VALIDATED]
-        self.producer = AIOKafkaProducer(loop=REPORT_PROCESSING_LOOP, bootstrap_servers=INSIGHTS_KAFKA_ADDRESS)
+        self.producer = None
         super().__init__(
             pre_delegate=self.pre_delegate,
             state_functions=state_functions,
@@ -690,23 +743,11 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
         :returns None
         """
         self.prefix = "REPORT VALIDATION STATE ON KAFKA"
-        await self.producer.stop()
-        self.producer = AIOKafkaProducer(loop=REPORT_PROCESSING_LOOP, bootstrap_servers=INSIGHTS_KAFKA_ADDRESS)
-        try:
-            await self.producer.start()
-        except (KafkaConnectionError, TimeoutError, Exception):
-            KAFKA_ERRORS.inc()
-            self.should_run = False
-            await self.producer.stop()
-            stop_all_event_loops()
-            raise KafkaMsgHandlerError(
-                format_message(
-                    self.prefix,
-                    "Unable to connect to kafka server.  Closing producer.",
-                    account_number=self.account_number,
-                    report_platform_id=self.report_platform_id,
-                )
-            )
+        if self.producer is not None:
+            self.producer.close()
+        self.producer = AIOProducer(
+            {"bootstrap.servers": INSIGHTS_KAFKA_ADDRESS, "message.timeout.ms": 1000}, loop=REPORT_PROCESSING_LOOP
+        )
         try:
             validation = {"hash": file_hash, "request_id": self.report_or_slice.request_id, "validation": self.status}
             msg = bytes(json.dumps(validation), "utf-8")
@@ -723,9 +764,8 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
             KAFKA_ERRORS.inc()
             LOG.error(format_message(self.prefix, "The following error occurred: %s" % err))
             stop_all_event_loops()
-
         finally:
-            await self.producer.stop()
+            self.producer.close()
 
     @DB_ERRORS.count_exceptions()
     @transaction.atomic

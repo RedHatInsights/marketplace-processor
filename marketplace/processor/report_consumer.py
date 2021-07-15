@@ -16,15 +16,15 @@
 #
 """ReportConsumer class for saving & acking uploaded messages."""
 import asyncio
+import itertools
 import json
 import logging
 import threading
 from datetime import datetime
 
 import pytz
-from aiokafka import AIOKafkaConsumer
+from confluent_kafka import Consumer
 from kafka.errors import KafkaError
-from kafka.errors import  KafkaConnectionError
 from prometheus_client import Counter
 
 from api.models import Report
@@ -76,6 +76,21 @@ class KafkaMsgHandlerError(Exception):
     pass
 
 
+def get_consumer():
+    """Create a Kafka consumer."""
+    consumer = Consumer(
+        {
+            "bootstrap.servers": INSIGHTS_KAFKA_ADDRESS,
+            "group.id": "mkt-group",
+            "queued.max.messages.kbytes": 1024,
+            "enable.auto.commit": False,
+        },
+        logger=LOG,
+    )
+    consumer.subscribe([MKT_TOPIC])
+    return consumer
+
+
 class ReportConsumer:
     """Class for saving and acking uploaded reports."""
 
@@ -85,13 +100,7 @@ class ReportConsumer:
         self.prefix = "REPORT CONSUMER"
         self.account_number = None
         self.upload_message = None
-        self.consumer = AIOKafkaConsumer(
-            MKT_TOPIC,
-            loop=UPLOAD_REPORT_CONSUMER_LOOP,
-            bootstrap_servers=INSIGHTS_KAFKA_ADDRESS,
-            group_id="mkt-group",
-            enable_auto_commit=False,
-        )
+        self.consumer = None
 
     @KAFKA_ERRORS.count_exceptions()
     def run(self, loop):
@@ -120,7 +129,7 @@ class ReportConsumer:
     async def save_message_and_ack(self, consumer_record):
         """Save and ack the uploaded kafka message."""
         self.prefix = "SAVING MESSAGE"
-        if consumer_record.topic == MKT_TOPIC:
+        if consumer_record.topic() == MKT_TOPIC:
             try:
                 missing_fields = []
                 self.upload_message = self.unpack_consumer_record(consumer_record)
@@ -155,7 +164,7 @@ class ReportConsumer:
                     report_serializer.save()
                     MSG_UPLOADS.labels(account_number=self.account_number).inc()
                     LOG.info(format_message(self.prefix, "Upload service message saved. Ready for processing."))
-                    await self.consumer.commit()
+                    self.consumer.commit()
                 except KafkaError as kerror:
                     KAFKA_ERRORS.inc()
                     LOG.error(
@@ -164,7 +173,7 @@ class ReportConsumer:
                             "The following error occurred while trying to save and " "commit the message: %s" % kerror,
                         )
                     )
-                    stop_all_event_loops()    
+                    stop_all_event_loops()
                 except Exception as error:  # pylint: disable=broad-except
                     DB_ERRORS.inc()
                     LOG.error(
@@ -180,7 +189,7 @@ class ReportConsumer:
                         self.prefix, f"Error processing records.  Message: {consumer_record}, Error: {message_error}"
                     )
                 )
-                await self.consumer.commit()
+                self.consumer.commit()
         else:
             LOG.debug(format_message(self.prefix, f"Message not on {MKT_TOPIC} topic: {consumer_record}"))
 
@@ -188,15 +197,21 @@ class ReportConsumer:
         """Decode the uploaded message and return it in JSON format."""
         self.prefix = "NEW REPORT UPLOAD"
         try:
-            json_message = json.loads(consumer_record.value.decode("utf-8"))
-            message = "received on %s topic" % consumer_record.topic
+            json_message = json.loads(consumer_record.value().decode("utf-8"))
+            message = "received on %s topic" % consumer_record.topic()
             # rh_account is being deprecated so we use it as a backup if
             # account is not there
             rh_account = json_message.get("rh_account")
             self.account_number = json_message.get("account", rh_account)
-            LOG.info(format_message(self.prefix, message, account_number=self.account_number))
+            request_id = json_message.get("request_id")
+            LOG.info(format_message(self.prefix, message, account_number=self.account_number, request_id=request_id))
             LOG.debug(
-                format_message(self.prefix, "Message: %s" % str(consumer_record), account_number=self.account_number)
+                format_message(
+                    self.prefix,
+                    "Message: %s" % str(consumer_record),
+                    account_number=self.account_number,
+                    request_id=request_id,
+                )
             )
             return json_message
         except ValueError:
@@ -211,29 +226,31 @@ class ReportConsumer:
         :param consumer : Kafka consumer
         :returns None
         """
-        try:
-            await self.consumer.start()
-        except KafkaConnectionError:
-            KAFKA_ERRORS.inc()
-            stop_all_event_loops()
-            raise KafkaMsgHandlerError("Unable to connect to kafka server.  Closing consumer.")
-        except Exception as err:  # pylint: disable=broad-except
-            KAFKA_ERRORS.inc()
-            LOG.error(format_message(self.prefix, "The following error occurred: %s" % err))
-            stop_all_event_loops()
+        if self.consumer is not None:
+            self.consumer.close()
+        self.consumer = get_consumer()
 
         LOG.info(log_message)
         try:
             # Consume messages
-            async for msg in self.consumer:
+            for _ in itertools.count():  # equivalent to while True, but mockable
+                msg = self.consumer.poll(timeout=1.0)
+                if msg is None:
+                    continue
+                if msg.error():
+                    KAFKA_ERRORS.inc()
+                    LOG.error(format_message(self.prefix, "The following error occurred: %s" % msg.error()))
+                    stop_all_event_loops()
+                    break
                 await async_queue.put(msg)
+                await self.loop_save_message_and_ack()
         except Exception as err:  # pylint: disable=broad-except
             KAFKA_ERRORS.inc()
             LOG.error(format_message(self.prefix, "The following error occurred: %s" % err))
             stop_all_event_loops()
         finally:
             # Will leave consumer group; perform autocommit if enabled.
-            await self.consumer.stop()
+            self.consumer.close()
 
 
 def create_upload_report_consumer_loop(loop):

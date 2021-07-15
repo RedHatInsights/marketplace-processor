@@ -283,4 +283,4 @@ INSIGHTS_KAFKA_TOPIC = configurator.get_kafka_topic()
 if configurator.is_clowder_enabled():
     # Prometheus setup for Clowder
     PROMETHEUS_METRICS_EXPORT_PORT = configurator.get_metrics_port()
-    PROMETHEUS_METRICS_EXPORT_ADDRESS = ''  # all addresses
+    PROMETHEUS_METRICS_EXPORT_ADDRESS = ""  # all addresses
