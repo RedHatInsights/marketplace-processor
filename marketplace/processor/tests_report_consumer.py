@@ -19,6 +19,7 @@ import asyncio
 import io
 import json
 import tarfile
+from unittest.mock import Mock
 from unittest.mock import patch
 
 from asynctest import CoroutineMock
@@ -57,10 +58,18 @@ class KafkaMsg:  # pylint:disable=too-few-public-methods
 
     def __init__(self, topic, url):
         """Initialize the message."""
-        self.topic = topic
+        self._topic = topic
         value_dict = {"url": url, "rh_account": "1234", "request_id": "234332"}
         value_str = json.dumps(value_dict)
-        self.value = value_str.encode("utf-8")
+        self._value = value_str.encode("utf-8")
+
+    def topic(self):
+        """Returns topic"""
+        return self._topic
+
+    def value(self):
+        """Returns value"""
+        return self._value
 
 
 class KafkaMsgHandlerTest(TestCase):
@@ -89,13 +98,14 @@ class KafkaMsgHandlerTest(TestCase):
     def test_unpack_consumer_record_not_json(self):
         """Test format message without account or report id."""
         fake_record = KafkaMsg(msg_handler.MKT_TOPIC, "http://internet.com")
-        fake_record.value = "not json".encode()
+        fake_record._value = "not json".encode()
 
         with self.assertRaises(msg_handler.MKTKafkaMsgException):
             self.report_consumer.unpack_consumer_record(fake_record)
 
     async def save_and_ack(self):
         """Test the save and ack message method."""
+        self.report_consumer.consumer = Mock()
         self.report_consumer.consumer.commit = CoroutineMock()
         mkt_msg = KafkaMsg(msg_handler.MKT_TOPIC, self.payload_url)
         # test happy case

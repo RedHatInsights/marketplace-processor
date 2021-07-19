@@ -31,7 +31,7 @@ GARBAGE_COLLECTION_LOOP = asyncio.new_event_loop()
 PROCESSOR_INSTANCES = []  # this list holds processor instances that have kafka components
 
 
-def format_message(prefix, message, account_number=None, report_platform_id=None):
+def format_message(prefix, message, account_number=None, report_platform_id=None, request_id=None):
     """Format log messages in a consistent way.
 
     :param prefix: (str) A meaningful prefix to be displayed in all caps.
@@ -40,13 +40,19 @@ def format_message(prefix, message, account_number=None, report_platform_id=None
     :param report_platform_id: (str) The marketplace report id.
     :returns: (str) containing formatted message
     """
-    if not report_platform_id and not account_number:
+    if not report_platform_id and not account_number and not request_id:
         actual_message = f"Report {prefix} - {message}"
-    elif account_number and not report_platform_id:
+    elif account_number and not report_platform_id and not request_id:
         actual_message = f"Report(account={account_number}) {prefix} - {message}"
-    else:
+    elif account_number and request_id and not report_platform_id:
+        actual_message = f"Report(account={account_number}, request_id={request_id}) {prefix} - {message}"
+    elif account_number and report_platform_id and not request_id:
         actual_message = "Report(account={}, report_platform_id={}) {} - {}".format(
             account_number, report_platform_id, prefix, message
+        )
+    else:
+        actual_message = "Report(account={}, request_id={}, report_platform_id={}) {} - {}".format(
+            account_number, request_id, report_platform_id, prefix, message
         )
 
     return actual_message
@@ -61,9 +67,9 @@ def stop_all_event_loops():
             # so we check the class and stop the consumer if we have a
             # ReportConsumer instance - otherwise we stop a producer
             if i.__class__.__name__ == "ReportConsumer":
-                i.consumer.stop()
+                i.consumer.close()
             else:
-                i.producer.stop()
+                i.producer.close()
         except Exception as err:  # pylint:disable=broad-except
             LOG.error(format_message(prefix, "The following error occurred: %s" % err))
     try:
