@@ -3,6 +3,8 @@ source /opt/app-root/etc/generate_container_user
 
 set -e
 
+>&2 cat "/cdapp/cdappconfig.json"
+>&2 echo ""
 >&2 echo "PWD=$(pwd)"
 >&2 echo ""
 >&2 echo "$(ls -al)"
