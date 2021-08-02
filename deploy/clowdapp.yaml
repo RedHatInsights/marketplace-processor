@@ -19,11 +19,11 @@ objects:
         livenessProbe:
           failureThreshold: 3
           httpGet:
-            path: /api/marketplace/v1/status/
+            path: /api/marketplace/v1/status/?liveness=true
             port: 8080
             scheme: HTTP
           initialDelaySeconds: 35
-          periodSeconds: 5
+          periodSeconds: 20
           successThreshold: 1
           timeoutSeconds: 120
         readinessProbe:
@@ -33,7 +33,7 @@ objects:
             port: 8080
             scheme: HTTP
           initialDelaySeconds: 35
-          periodSeconds: 5
+          periodSeconds: 20
           successThreshold: 1
           timeoutSeconds: 120
         env:
