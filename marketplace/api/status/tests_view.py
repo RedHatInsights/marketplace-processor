@@ -15,6 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 """Test the status API."""
+from unittest.mock import patch
+
 from django.test import TestCase
 from django.urls import reverse
 
@@ -28,14 +30,18 @@ class StatusViewTest(TestCase):
         """Test the status endpoint."""
         Status.healthy = True
         url = reverse("server-status")
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        json_result = response.json()
-        self.assertEqual(json_result["api_version"], 1)
+        with patch("api.status.view.check_kafka_connection", return_value=True):
+            with patch("api.status.view.check_database_connection", return_value=True):
+                response = self.client.get(url)
+                self.assertEqual(response.status_code, 200)
+                json_result = response.json()
+                self.assertEqual(json_result["api_version"], 1)
 
     def test_status_endpoint_bad(self):
         """Test the status endpoint when unhealthy."""
         Status.healthy = False
         url = reverse("server-status")
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 500)
+        with patch("api.status.view.check_kafka_connection", return_value=True):
+            with patch("api.status.view.check_database_connection", return_value=True):
+                response = self.client.get(url)
+                self.assertEqual(response.status_code, 500)
