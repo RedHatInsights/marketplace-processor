@@ -70,7 +70,7 @@ def check_database_connection():
         return False
 
     # transform list-of-lists into list-of-dicts including column names.
-    result = [dict(zip(names, row)) for row in raw]
+    result = [dict(zip(names, row)) for row in raw]  # noqa
 
     return True
 
