@@ -16,7 +16,6 @@
 #
 """ReportConsumer class for saving & acking uploaded messages."""
 import asyncio
-import itertools
 import json
 import logging
 import threading
@@ -125,6 +124,7 @@ class ReportConsumer:
         while self.should_run:
             consumer_record = await REPORT_PENDING_QUEUE.get()
             await self.save_message_and_ack(consumer_record)
+            return
 
     async def save_message_and_ack(self, consumer_record):
         """Save and ack the uploaded kafka message."""
@@ -233,7 +233,7 @@ class ReportConsumer:
         LOG.info(log_message)
         try:
             # Consume messages
-            for _ in itertools.count():  # equivalent to while True, but mockable
+            while self.should_run:
                 msg = self.consumer.poll(timeout=1.0)
                 if msg is None:
                     continue
