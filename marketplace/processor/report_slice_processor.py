@@ -22,7 +22,7 @@ import tempfile
 import threading
 
 from minio import Minio
-from minio.error import ResponseError
+from minio.error import InvalidResponseError
 
 from api.models import ReportSlice
 from api.serializers import ReportSliceSerializer
@@ -224,7 +224,7 @@ class ReportSliceProcessor(AbstractProcessor):  # pylint: disable=too-many-insta
             minio_client.fput_object(
                 bucket_name=MINIO_BUCKET, object_name=metric_file_name, file_path=metric_file.name
             )
-        except (ResponseError, Exception) as err:  # pylint: disable=broad-except
+        except (InvalidResponseError, Exception) as err:  # pylint: disable=broad-except
             os.remove(metric_file.name)
             raise err
         os.remove(metric_file.name)
