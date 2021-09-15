@@ -87,7 +87,7 @@ class KafkaMsgHandlerTest(TestCase):
     def test_format_message_no_account_report(self):
         """Test format message without account or report id."""
         msg = msg_handler.format_message("p", "m")
-        self.assertEqual(msg, "Report p - m")
+        self.assertEqual(msg, "p - m")
 
     def test_unpack_consumer_record(self):
         """Test format message without account or report id."""

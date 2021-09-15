@@ -34,6 +34,7 @@ from api.status.model import Status
 from api.status.serializer import StatusSerializer
 from config.settings.base import INSIGHTS_KAFKA_HOST
 from config.settings.base import INSIGHTS_KAFKA_PORT
+from processor.processor_utils import format_message
 
 
 LOG = logging.getLogger(__name__)
@@ -79,23 +80,34 @@ def check_database_connection():
 @permission_classes((permissions.AllowAny,))
 def status(request):
     """Provide the server status information."""
-    if "liveness" in request.query_params:
-        return Response({"alive": True})
+    prefix = "STATUS"
+    status_info = Status()
+
+    if Status.readiness_failures > 5:
+        LOG.info(format_message(prefix, "Application is unhealthy. Triggering an exit."))
+        exit(-1)
 
     if not check_kafka_connection():
         status = HTTPStatus.FAILED_DEPENDENCY
+        prefix = "STATUS"
+        LOG.info(format_message(prefix, "Unable to establish connection with broker."))
+        Status.readiness_failures = Status.readiness_failures + 1
         return Response(data={"error": "Unable to establish connection with broker.", "status": status}, status=status)
 
     if not check_database_connection():
         status = HTTPStatus.FAILED_DEPENDENCY
+        LOG.info(format_message(prefix, "Database backend not connected."))
+        Status.readiness_failures = Status.readiness_failures + 1
         return Response(data={"error": "Database backend not connected.", "status": status}, status=status)
 
-    status_info = Status()
     serializer = StatusSerializer(status_info)
     server_info = serializer.data
     server_info["server_address"] = request.META.get("HTTP_HOST", "localhost")
 
     if Status.healthy:
         return Response(server_info)
+
+    LOG.info(format_message(prefix, "Application is unhealthy. Readiness failure count increased."))
+    Status.readiness_failures = Status.readiness_failures + 1
 
     return Response(status=500)

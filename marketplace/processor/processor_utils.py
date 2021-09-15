@@ -41,7 +41,7 @@ def format_message(prefix, message, account_number=None, report_platform_id=None
     :returns: (str) containing formatted message
     """
     if not report_platform_id and not account_number and not request_id:
-        actual_message = f"Report {prefix} - {message}"
+        actual_message = f"{prefix} - {message}"
     elif account_number and not report_platform_id and not request_id:
         actual_message = f"Report(account={account_number}) {prefix} - {message}"
     elif account_number and request_id and not report_platform_id:

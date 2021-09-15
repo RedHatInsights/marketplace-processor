@@ -31,6 +31,7 @@ class Status:
     """A server's status."""
 
     healthy = True
+    readiness_failures = 0
 
     @property
     def git_commit(self):  # pylint: disable=R0201
