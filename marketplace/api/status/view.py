@@ -91,15 +91,14 @@ def status(request):
         status = HTTPStatus.FAILED_DEPENDENCY
         prefix = "STATUS"
         LOG.info(format_message(prefix, "Unable to establish connection with broker."))
-        Status.readiness_failures = Status.readiness_failures + 1 
+        Status.readiness_failures = Status.readiness_failures + 1
         return Response(data={"error": "Unable to establish connection with broker.", "status": status}, status=status)
 
     if not check_database_connection():
         status = HTTPStatus.FAILED_DEPENDENCY
         LOG.info(format_message(prefix, "Database backend not connected."))
-        Status.readiness_failures = Status.readiness_failures + 1 
+        Status.readiness_failures = Status.readiness_failures + 1
         return Response(data={"error": "Database backend not connected.", "status": status}, status=status)
-
 
     serializer = StatusSerializer(status_info)
     server_info = serializer.data
@@ -107,8 +106,8 @@ def status(request):
 
     if Status.healthy:
         return Response(server_info)
-    
+
     LOG.info(format_message(prefix, "Application is unhealthy. Readiness failure count increased."))
-    Status.readiness_failures = Status.readiness_failures + 1 
-    
+    Status.readiness_failures = Status.readiness_failures + 1
+
     return Response(status=500)
