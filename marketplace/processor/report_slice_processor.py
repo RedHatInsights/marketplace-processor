@@ -35,6 +35,7 @@ from config.settings.base import RETRIES_ALLOWED
 from config.settings.base import RETRY_TIME
 from processor.abstract_processor import AbstractProcessor
 from processor.abstract_processor import FAILED_TO_VALIDATE
+from processor.abstract_processor import UPLOADED_REPORT_METRICS
 from processor.processor_utils import format_message
 from processor.processor_utils import PROCESSOR_INSTANCES
 from processor.processor_utils import SLICE_PROCESSING_LOOP
@@ -224,6 +225,7 @@ class ReportSliceProcessor(AbstractProcessor):  # pylint: disable=too-many-insta
             minio_client.fput_object(
                 bucket_name=MINIO_BUCKET, object_name=metric_file_name, file_path=metric_file.name
             )
+            UPLOADED_REPORT_METRICS.labels(account_number=self.account_number).inc()
         except (InvalidResponseError, Exception) as err:  # pylint: disable=broad-except
             os.remove(metric_file.name)
             raise err
