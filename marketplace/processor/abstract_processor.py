@@ -25,6 +25,7 @@ from enum import Enum
 
 import pytz
 from django.db import transaction
+from prometheus_client import Counter
 from prometheus_client import Gauge
 from prometheus_client import Summary
 
@@ -63,8 +64,8 @@ ARCHIVED_FAIL_SLICES = Gauge("archived_fail_slices", "Slices that have been arch
 ARCHIVED_SUCCESS_SLICES = Gauge(
     "archived_success_slices", "Slices that have been archived as successes", ["account_number"]
 )
-DOWNLOAD_REPORTS = Gauge("download_reports", "Reports that were successfuly downloaded", ["account_number"])
-UPLOADED_REPORT_METRICS = Gauge(
+DOWNLOAD_REPORTS = Counter("download_reports", "Reports that were successfuly downloaded", ["account_number"])
+UPLOADED_REPORT_METRICS = Counter(
     "uploaded_report_metrics", "Report metrics that were successfuly uploaded", ["account_number"]
 )
 FAILED_TO_DOWNLOAD = Gauge("failed_download", "Reports that failed to download", ["account_number"])
