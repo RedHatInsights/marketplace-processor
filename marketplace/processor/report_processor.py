@@ -40,6 +40,7 @@ from config.settings.base import INSIGHTS_KAFKA_ADDRESS
 from config.settings.base import RETRIES_ALLOWED
 from config.settings.base import RETRY_TIME
 from processor.abstract_processor import AbstractProcessor
+from processor.abstract_processor import DOWNLOAD_REPORTS
 from processor.abstract_processor import FAILED_TO_DOWNLOAD
 from processor.abstract_processor import FAILED_TO_VALIDATE
 from processor.abstract_processor import RETRY
@@ -202,6 +203,7 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
             # update the report or slice with downloaded info
             self.update_object_state(options=options)
             self.deduplicate_reports()
+            DOWNLOAD_REPORTS.labels(account_number=self.account_number).inc()
         except (FailDownloadException, FailExtractException) as err:
             LOG.error(
                 format_message(self.prefix, report_download_failed_msg % err, account_number=self.account_number)

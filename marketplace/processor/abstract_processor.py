@@ -63,6 +63,10 @@ ARCHIVED_FAIL_SLICES = Gauge("archived_fail_slices", "Slices that have been arch
 ARCHIVED_SUCCESS_SLICES = Gauge(
     "archived_success_slices", "Slices that have been archived as successes", ["account_number"]
 )
+DOWNLOAD_REPORTS = Gauge("download_reports", "Reports that were successfuly downloaded", ["account_number"])
+UPLOADED_REPORT_METRICS = Gauge(
+    "uploaded_report_metrics", "Report metrics that were successfuly uploaded", ["account_number"]
+)
 FAILED_TO_DOWNLOAD = Gauge("failed_download", "Reports that failed to download", ["account_number"])
 FAILED_TO_VALIDATE = Gauge("failed_validation", "Reports that could not be validated", ["account_number"])
 INVALID_REPORTS = Gauge("invalid_reports", "Reports containing invalid syntax", ["account_number"])
