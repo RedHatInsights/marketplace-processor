@@ -22,6 +22,7 @@ import threading
 from datetime import datetime
 
 import pytz
+from asgiref.sync import sync_to_async
 from confluent_kafka import Consumer
 from kafka.errors import KafkaError
 from prometheus_client import Counter
@@ -161,7 +162,8 @@ class ReportConsumer:
                     }
                     report_serializer = ReportSerializer(data=uploaded_report)
                     report_serializer.is_valid(raise_exception=True)
-                    report_serializer.save()
+                    async_save = sync_to_async(report_serializer.save)
+                    await async_save()
                     MSG_UPLOADS.labels(account_number=self.account_number).inc()
                     LOG.info(format_message(self.prefix, "Upload service message saved. Ready for processing."))
                     self.consumer.commit()
@@ -250,7 +252,8 @@ class ReportConsumer:
             stop_all_event_loops()
         finally:
             # Will leave consumer group; perform autocommit if enabled.
-            self.consumer.close()
+            if self.consumer:
+                self.consumer.close()
 
 
 def create_upload_report_consumer_loop(loop):

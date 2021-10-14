@@ -284,3 +284,5 @@ if configurator.is_clowder_enabled():
     # Prometheus setup for Clowder
     PROMETHEUS_METRICS_EXPORT_PORT = configurator.get_metrics_port()
     PROMETHEUS_METRICS_EXPORT_ADDRESS = ""  # all addresses
+
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"

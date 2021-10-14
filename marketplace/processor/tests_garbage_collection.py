@@ -20,10 +20,11 @@ import json
 import uuid
 from datetime import datetime
 from datetime import timedelta
+from unittest import IsolatedAsyncioTestCase
 from unittest.mock import patch
 
 import pytz
-from django.test import TestCase
+from django import db
 
 from api.models import Report
 from api.models import ReportArchive
@@ -31,8 +32,10 @@ from api.models import ReportSlice
 from api.models import ReportSliceArchive
 from processor import garbage_collection
 
+# from django.test import TestCase
 
-class GarbageCollectorTests(TestCase):
+
+class GarbageCollectorTests(IsolatedAsyncioTestCase):
     """Test Cases for the garbage collector."""
 
     def setUp(self):
@@ -77,6 +80,10 @@ class GarbageCollectorTests(TestCase):
         )
         self.archive_slice.save()
         self.garbage_collector = garbage_collection.GarbageCollector()
+
+    def tearDown(self):
+        """Remove test setup."""
+        db.connections.close_all()
 
     def test_deleting_archive_and_slice(self):
         """Test deleting the report archive."""

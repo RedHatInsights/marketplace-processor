@@ -21,6 +21,7 @@ import os
 import tempfile
 import threading
 
+from asgiref.sync import sync_to_async
 from minio import Minio
 from minio.error import InvalidResponseError
 
@@ -166,7 +167,8 @@ class ReportSliceProcessor(AbstractProcessor):  # pylint: disable=too-many-insta
             )
             self.next_state = ReportSlice.METRICS_UPLOADED
             options = {"ready_to_archive": True}
-            self.update_object_state(options=options)
+            async_update = sync_to_async(self.update_object_state)(options=options)
+            await async_update
         except Exception as error:  # pylint: disable=broad-except
             OBJECTSTORE_ERRORS.inc()
             LOG.error(
@@ -177,7 +179,12 @@ class ReportSliceProcessor(AbstractProcessor):  # pylint: disable=too-many-insta
                     report_platform_id=self.report_platform_id,
                 )
             )
-            self.determine_retry(ReportSlice.FAILED_METRICS_UPLOAD, ReportSlice.VALIDATED, retry_type=ReportSlice.TIME)
+            async_retry = sync_to_async(
+                self.determine_retry(
+                    ReportSlice.FAILED_METRICS_UPLOAD, ReportSlice.VALIDATED, retry_type=ReportSlice.TIME
+                )
+            )
+            await async_retry()
 
     async def _upload_to_object_storage(self):
         """Upload to the metrics to object storage."""

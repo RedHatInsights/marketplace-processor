@@ -27,6 +27,7 @@ from threading import Thread
 
 import pytz
 import requests
+from asgiref.sync import sync_to_async
 from confluent_kafka import KafkaException
 from confluent_kafka import Producer
 from django.db import transaction
@@ -156,7 +157,7 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
             Report.FAILED_VALIDATION_REPORTING: self.archive_report_and_slices,
         }
         state_metrics = {Report.FAILED_DOWNLOAD: FAILED_TO_DOWNLOAD, Report.FAILED_VALIDATION: FAILED_TO_VALIDATE}
-        self.async_states = [Report.VALIDATED]
+        self.async_states = [Report.STARTED, Report.VALIDATED]
         self.producer = None
         super().__init__(
             pre_delegate=self.pre_delegate,
@@ -181,7 +182,7 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
         if self.report_or_slice.upload_ack_status:
             self.status = self.report_or_slice.upload_ack_status
 
-    def transition_to_downloaded(self):
+    async def transition_to_downloaded(self):
         """Attempt to download report, extract json, and create slices.
 
         As long as we have one valid slice, we set the status to success.
@@ -198,11 +199,12 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
         )
         try:
             report_tar_gz = self._download_report()
-            options = self._extract_and_create_slices(report_tar_gz)
+            options = await self._extract_and_create_slices(report_tar_gz)
             self.next_state = Report.DOWNLOADED
             # update the report or slice with downloaded info
-            self.update_object_state(options=options)
-            self.deduplicate_reports()
+            async_update = sync_to_async(self.update_object_state)(options=options)
+            await async_update
+            # self.deduplicate_reports()
             DOWNLOAD_REPORTS.labels(account_number=self.account_number).inc()
         except (FailDownloadException, FailExtractException) as err:
             LOG.error(
@@ -210,7 +212,8 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
             )
             self.next_state = Report.FAILED_DOWNLOAD
             options = {"ready_to_archive": True}
-            self.update_object_state(options=options)
+            async_update = sync_to_async(self.update_object_state)(options=options)
+            await async_update
         except (RetryDownloadException, RetryExtractException) as err:
             LOG.error(
                 format_message(self.prefix, report_download_failed_msg % err, account_number=self.account_number)
@@ -229,7 +232,7 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
             )
         )
         # find all associated report slices
-        report_slices = ReportSlice.objects.all().filter(report=self.report_or_slice)
+        report_slices = ReportSlice.objects.filter(report=self.report_or_slice)
         self.status = SUCCESS_CONFIRM_STATUS
         for report_slice in report_slices:
             try:
@@ -280,7 +283,8 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
             await self._send_confirmation(message_hash)
             self.next_state = Report.VALIDATION_REPORTED
             options = {"ready_to_archive": True}
-            self.update_object_state(options=options)
+            async_update = sync_to_async(self.update_object_state)(options=options)
+            await async_update
             LOG.info(
                 format_message(
                     self.prefix,
@@ -291,8 +295,10 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
             )
             if self.status == FAILURE_CONFIRM_STATUS:
                 options = {"retry": RETRY.keep_same, "ready_to_archive": True}
-                self.update_object_state(options=options)
-                self.archive_report_and_slices()
+                async_update = sync_to_async(self.update_object_state)(options=options)
+                await async_update
+                async_archive = sync_to_async(self.archive_report_and_slices)
+                await async_archive()
         except Exception as error:  # pylint: disable=broad-except
             LOG.error(
                 format_message(
@@ -302,7 +308,7 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
                     report_platform_id=self.report_platform_id,
                 )
             )
-            self.determine_retry(Report.FAILED_VALIDATION_REPORTING, Report.VALIDATED)
+            await sync_to_async(self.determine_retry)(Report.FAILED_VALIDATION_REPORTING, Report.VALIDATED)
 
     @DB_ERRORS.count_exceptions()
     def create_report_slice(self, options):
@@ -328,9 +334,10 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
         # first we should see if any slices exist with this slice id & report_platform_id
         # if they exist we will not create the slice
         created = False
-        existing_report_slices = ReportSlice.objects.filter(report_platform_id=self.report_platform_id).filter(
-            report_slice_id=report_slice_id
+        existing_report_slices = ReportSlice.objects.filter(
+            report_platform_id=self.report_platform_id, report_slice_id=report_slice_id
         )
+
         if existing_report_slices.count() > 0:
             LOG.error(
                 format_message(
@@ -500,7 +507,7 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
                 )
             )
 
-    def validate_metadata_file(self, tar, metadata):  # noqa: C901 (too-complex)
+    async def validate_metadata_file(self, tar, metadata):  # noqa: C901 (too-complex)
         """Validate the contents of the metadata file.
 
         :param tar: the tarfile object.
@@ -576,7 +583,9 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
                 )
             )
             options["source_metadata"] = source_metadata
-        self.update_object_state(options)
+        self.next_state = Report.DOWNLOADED
+        async_update = sync_to_async(self.update_object_state)(options)
+        await async_update
         valid_slice_ids = {}
         report_slices = metadata_json.get("report_slices", {})
         for report_slice_id, _ in report_slices.items():
@@ -584,7 +593,7 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
         return valid_slice_ids, options
 
     # pylint: disable=too-many-branches, too-many-statements
-    def _extract_and_create_slices(self, report_tar_gz):  # noqa: C901 (too-complex)
+    async def _extract_and_create_slices(self, report_tar_gz):  # noqa: C901 (too-complex)
         """Extract metrics from tar.gz file.
 
         :param report_tar_gz: A hexstring or BytesIO tarball
@@ -606,7 +615,7 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
                     json_files.append(file)
             if json_files and metadata_file:
                 try:
-                    valid_slice_ids, options = self.validate_metadata_file(tar, metadata_file)
+                    valid_slice_ids, options = await self.validate_metadata_file(tar, metadata_file)
                     report_names = []
                     for report_id, _ in valid_slice_ids.items():
                         for file in json_files:
@@ -677,7 +686,8 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
                                     "source": options.get("source"),
                                     "source_metadata": options.get("source_metadata", {}),
                                 }
-                                created = self.create_report_slice(slice_options)
+                                async_rs = sync_to_async(self.create_report_slice)(slice_options)
+                                created = await async_rs
                                 if created:
                                     report_names.append(report_id)
 
