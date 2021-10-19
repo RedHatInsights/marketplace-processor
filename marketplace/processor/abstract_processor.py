@@ -24,6 +24,7 @@ from datetime import timedelta
 from enum import Enum
 
 import pytz
+from asgiref.sync import sync_to_async
 from django.db import transaction
 from prometheus_client import Counter
 from prometheus_client import Gauge
@@ -139,8 +140,12 @@ class AbstractProcessor(ABC):  # pylint: disable=too-many-instance-attributes
         while self.should_run:
             if not self.report_or_slice:
                 try:
-                    self.assign_object()
-                except Exception:  # pylint:disable=broad-except
+                    async_assign = sync_to_async(self.assign_object)
+                    await async_assign()
+                except Exception as error:  # pylint:disable=broad-except
+                    LOG.error(
+                        format_message(self.prefix, "The following error occurred: %s." % str(error)), exc_info=error
+                    )
                     stop_all_event_loops()
             if self.report_or_slice:
                 try:
@@ -294,8 +299,10 @@ class AbstractProcessor(ABC):  # pylint: disable=too-many-instance-attributes
         if self.state_functions.get(self.state):
             if self.state in self.async_states:
                 await self.state_functions.get(self.state)()
+                # async_to_sync(self.state_functions.get(self.state))
             else:
-                self.state_functions.get(self.state)()
+                async_state_func = sync_to_async(self.state_functions.get(self.state))
+                await async_state_func()
         else:
             self.reset_variables()
 
@@ -500,7 +507,7 @@ class AbstractProcessor(ABC):  # pylint: disable=too-many-instance-attributes
 
     @DB_ERRORS.count_exceptions()  # noqa: C901 (too-complex)
     @transaction.atomic
-    def archive_report_and_slices(self):  # pylint: disable=too-many-statements
+    def archive_report_and_slices(self):  # noqa: C901 (too-complex)
         """Archive the report slice objects & associated report."""
         self.prefix = "ARCHIVING"
         if self.object_class == Report:

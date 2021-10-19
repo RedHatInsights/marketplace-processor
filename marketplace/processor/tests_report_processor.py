@@ -22,13 +22,15 @@ import tarfile
 import uuid
 from datetime import datetime
 from datetime import timedelta
+from unittest import IsolatedAsyncioTestCase
 from unittest.mock import patch
 
 import pytz
 import requests
 import requests_mock
+from asgiref.sync import sync_to_async
 from asynctest import CoroutineMock
-from django.test import TransactionTestCase
+from django import db
 from prometheus_client import REGISTRY
 
 from api.models import Report
@@ -40,10 +42,12 @@ from processor import report_consumer as msg_handler
 from processor import report_processor
 from processor import tests_report_consumer as test_handler
 
+# from django.test import TransactionTestCase
+
 
 # pylint: disable=too-many-public-methods
 # pylint: disable=protected-access,too-many-lines,too-many-instance-attributes
-class ReportProcessorTests(TransactionTestCase):
+class ReportProcessorTests(IsolatedAsyncioTestCase):
     """Test Cases for the Message processor."""
 
     def setUp(self):
@@ -95,6 +99,11 @@ class ReportProcessorTests(TransactionTestCase):
         self.processor = report_processor.ReportProcessor()
         self.processor.report = self.report_record
 
+    def tearDown(self):
+        self.report_slice.delete()
+        self.report_record.delete()
+        db.connections.close_all()
+
     def check_variables_are_reset(self):
         """Check that report processor members have been cleared."""
         processor_attributes = [
@@ -139,6 +148,7 @@ class ReportProcessorTests(TransactionTestCase):
         archived = ReportArchive.objects.get(account="4321")
         self.assertEqual(json.loads(archived.state_info), [Report.NEW])
         self.assertIsNotNone(archived.processing_end_time)
+        archived.delete()
         # assert the processor was reset
         self.check_variables_are_reset()
 
@@ -238,7 +248,8 @@ class ReportProcessorTests(TransactionTestCase):
     async def async_test_run_method(self):
         """Test the run method."""
         self.report_record.state = Report.NEW
-        self.report_record.save()
+        async_r = sync_to_async(self.report_record.save)
+        await async_r()
         self.processor.report_or_slice = None
         self.processor.should_run = True
 
@@ -247,21 +258,24 @@ class ReportProcessorTests(TransactionTestCase):
 
         with patch(
             "processor.abstract_processor." "AbstractProcessor.transition_to_started",
-            side_effect=transition_side_effect,
+            side_effect=CoroutineMock(side_effect=transition_side_effect),
         ):
             await self.processor.run()
             self.assertEqual(self.processor.report_or_slice, self.report_record)
 
-    def test_run_method(self):
-        """Test the async run function."""
-        event_loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(event_loop)
-        coro = asyncio.coroutine(self.async_test_run_method)
-        event_loop.run_until_complete(coro())
-        event_loop.close()
+    # def test_run_method(self):
+    #     """Test the async run function."""
+    #     event_loop = asyncio.new_event_loop()
+    #     asyncio.set_event_loop(event_loop)
+    #     coro = asyncio.coroutine(self.async_test_run_method)
+    #     event_loop.run_until_complete(coro())
+    #     event_loop.close()
 
     def test_assign_report_new(self):
         """Test the assign report function with only a new report."""
+        reports = Report.objects.all()
+        for report in reports:
+            report.delete()
         self.report_record.state = Report.NEW
         self.report_record.save()
         self.processor.report = None
@@ -351,7 +365,8 @@ class ReportProcessorTests(TransactionTestCase):
         self.report_record.state = Report.STARTED
         self.report_record.report_platform_id = self.uuid
         self.report_record.upload_ack_status = report_processor.SUCCESS_CONFIRM_STATUS
-        self.report_record.save()
+        async_r = sync_to_async(self.report_record.save)
+        await async_r()
         self.processor.report_or_slice = self.report_record
 
         def download_side_effect():
@@ -360,8 +375,14 @@ class ReportProcessorTests(TransactionTestCase):
             self.report_record.state = Report.DOWNLOADED
             self.report_record.save()
 
+        def download_report_side_effect():
+            """Mock download report"""
+            pass
+
+        self.processor._send_confirmation = CoroutineMock()
+
         with patch(
-            "processor.report_processor." "ReportProcessor.transition_to_downloaded", side_effect=download_side_effect
+            "processor.report_processor.ReportProcessor.transition_to_downloaded", side_effect=download_side_effect
         ):
             await self.processor.delegate_state()
             self.assertEqual(self.processor.report_platform_id, self.report_record.report_platform_id)
@@ -370,7 +391,8 @@ class ReportProcessorTests(TransactionTestCase):
 
         # test the async function call state
         self.report_record.state = Report.VALIDATED
-        self.report_record.save()
+        async_r = sync_to_async(self.report_record.save)
+        await async_r()
 
         def validation_reported_side_effect():
             """Side effect for async transition method."""
@@ -393,7 +415,7 @@ class ReportProcessorTests(TransactionTestCase):
         self.report_record.state = Report.STARTED
         self.report_record.report_platform_id = self.uuid
         self.report_record.upload_ack_status = report_processor.SUCCESS_CONFIRM_STATUS
-        self.report_record.save()
+        sync_to_async(self.report_record.save)
         self.processor.report_or_slice = self.report_record
 
         def delegate_side_effect():
@@ -442,7 +464,7 @@ class ReportProcessorTests(TransactionTestCase):
         self.assertEqual(self.report_record.state, Report.STARTED)
         self.assertEqual(json.loads(self.report_record.state_info), [Report.NEW, Report.STARTED])
 
-    def test_transition_to_downloaded(self):
+    async def test_transition_to_downloaded(self):
         """Test that the transition to download works successfully."""
         metadata_json = {
             "report_id": "5f2cc1fd-ec66-4c67-be1b-171a595ce319",
@@ -458,26 +480,29 @@ class ReportProcessorTests(TransactionTestCase):
         buffer_content = test_handler.create_tar_buffer(report_files)
         with requests_mock.mock() as mock_req:
             mock_req.get(self.payload_url, content=buffer_content)
-            self.processor.transition_to_downloaded()
-            self.assertEqual(self.report_record.state, Report.DOWNLOADED)
+            await self.processor.transition_to_downloaded()
+            report = await sync_to_async(Report.objects.get)(pk=self.report_record.pk)
+            self.assertEqual(report.state, Report.DOWNLOADED)
 
-    def test_transition_to_downloaded_exception_retry(self):
+    async def test_transition_to_downloaded_exception_retry(self):
         """Test that the transition to download with retry exception."""
         self.processor.upload_message = {"url": self.payload_url, "rh_account": "00001"}
         self.report_record.state = Report.STARTED
-        self.report_record.save()
+        async_r = sync_to_async(self.report_record.save)
+        await async_r()
         self.processor.report_or_slice = self.report_record
         with requests_mock.mock() as mock_req:
             mock_req.get(self.payload_url, exc=requests.exceptions.HTTPError)
-            self.processor.transition_to_downloaded()
+            await self.processor.transition_to_downloaded()
             self.assertEqual(self.report_record.state, Report.STARTED)
             self.assertEqual(self.report_record.retry_count, 1)
 
-    def test_transition_to_downloaded_exception_fail(self):
+    async def test_transition_to_downloaded_exception_fail(self):
         """Test that the transition to download with fail exception."""
         self.processor.upload_message = {"url": self.payload_url, "rh_account": "00001"}
         self.report_record.state = Report.STARTED
-        self.report_record.save()
+        async_r = sync_to_async(self.report_record.save)
+        await async_r()
         self.processor.report_or_slice = self.report_record
 
         def download_side_effect():
@@ -485,7 +510,7 @@ class ReportProcessorTests(TransactionTestCase):
             raise report_processor.FailDownloadException()
 
         with patch("processor.report_processor.ReportProcessor._download_report", side_effect=download_side_effect):
-            self.processor.transition_to_downloaded()
+            await self.processor.transition_to_downloaded()
             self.assertEqual(self.report_record.state, Report.FAILED_DOWNLOAD)
 
     def test_transition_to_validated_report_exception(self):
@@ -529,7 +554,8 @@ class ReportProcessorTests(TransactionTestCase):
         self.report_record.state = Report.VALIDATED
         self.report_record.report_platform_id = self.uuid
         self.report_record.upload_ack_status = report_processor.SUCCESS_CONFIRM_STATUS
-        self.report_record.save()
+        async_save = sync_to_async(self.report_record.save)
+        await async_save()
         self.processor.report_or_slice = self.report_record
         self.processor.status = report_processor.SUCCESS_CONFIRM_STATUS
         self.processor.upload_message = {"request_id": self.uuid}
@@ -552,7 +578,8 @@ class ReportProcessorTests(TransactionTestCase):
         self.report_record.retry_count = 0
         self.report_record.report_platform_id = self.uuid
         self.report_record.upload_ack_status = report_processor.SUCCESS_CONFIRM_STATUS
-        self.report_record.save()
+        async_save = sync_to_async(self.report_record.save)
+        await async_save()
         self.processor.report_or_slice = self.report_record
         self.processor.status = report_processor.SUCCESS_CONFIRM_STATUS
         self.processor.upload_message = {"hash": self.uuid}
@@ -591,7 +618,8 @@ class ReportProcessorTests(TransactionTestCase):
             processing_start_time=datetime.now(pytz.utc),
         )
         report_to_archive.upload_ack_status = report_processor.FAILURE_CONFIRM_STATUS
-        report_to_archive.save()
+        async_save = sync_to_async(report_to_archive.save)
+        await async_save()
         self.processor.report_or_slice = report_to_archive
         self.processor.report_platform_id = self.uuid2
         self.processor.account_number = "43214"
@@ -601,8 +629,8 @@ class ReportProcessorTests(TransactionTestCase):
         self.processor._send_confirmation = CoroutineMock()
         await self.processor.transition_to_validation_reported()
         with self.assertRaises(Report.DoesNotExist):
-            Report.objects.get(id=report_to_archive.id)
-        archived = ReportArchive.objects.get(account="43214")
+            await sync_to_async(Report.objects.get)(id=report_to_archive.id)
+        archived = await sync_to_async(ReportArchive.objects.get)(account="43214")
         self.assertEqual(archived.state, Report.VALIDATION_REPORTED)
         self.assertEqual(archived.upload_ack_status, report_processor.FAILURE_CONFIRM_STATUS)
         # assert the processor was reset
@@ -654,7 +682,7 @@ class ReportProcessorTests(TransactionTestCase):
         self.report_slice.refresh_from_db()
         self.assertEqual(self.report_slice.state, ReportSlice.PENDING)
 
-    def test_extract_and_create_slices_success(self):
+    async def test_extract_and_create_slices_success(self):
         """Testing the extract method with valid buffer content."""
         source_uuid = str(uuid.uuid4())
         metadata_json = {
@@ -668,11 +696,11 @@ class ReportProcessorTests(TransactionTestCase):
         self.processor.report_or_slice = self.report_record
         self.processor.account_number = "0001"
         buffer_content = test_handler.create_tar_buffer(report_files)
-        result = self.processor._extract_and_create_slices(buffer_content)
+        result = await self.processor._extract_and_create_slices(buffer_content)
         expected_result = {"report_platform_id": 1, "source": source_uuid, "source_metadata": {"foo": "bar"}}
         self.assertEqual(result, expected_result)
 
-    def test_extract_and_create_slices_mismatch(self):
+    async def test_extract_and_create_slices_mismatch(self):
         """Testing the extract method with mismatched metadata content."""
         metadata_json = {
             "report_id": 1,
@@ -686,9 +714,9 @@ class ReportProcessorTests(TransactionTestCase):
         self.processor.account_number = "0001"
         buffer_content = test_handler.create_tar_buffer(report_files)
         with self.assertRaises(report_processor.FailExtractException):
-            self.processor._extract_and_create_slices(buffer_content)
+            await self.processor._extract_and_create_slices(buffer_content)
 
-    def test_extract_and_create_slices_metadata_fail(self):
+    async def test_extract_and_create_slices_metadata_fail(self):
         """Testing the extract method with invalid metadata buffer content."""
         metadata_json = "myfakeencodedstring"
         slice_uuid = str(self.uuid)
@@ -698,9 +726,9 @@ class ReportProcessorTests(TransactionTestCase):
         self.processor.account_number = "0001"
         buffer_content = test_handler.create_tar_buffer(report_files, meta_encoding="utf-16")
         with self.assertRaises(report_processor.FailExtractException):
-            self.processor._extract_and_create_slices(buffer_content)
+            await self.processor._extract_and_create_slices(buffer_content)
 
-    def test_extract_and_create_slices_slice_fail(self):
+    async def test_extract_and_create_slices_slice_fail(self):
         """Testing the extract method with bad slice."""
         metadata_json = {
             "report_id": 1,
@@ -714,17 +742,17 @@ class ReportProcessorTests(TransactionTestCase):
         self.processor.account_number = "0001"
         buffer_content = test_handler.create_tar_buffer(report_files, encoding="utf-16", meta_encoding="utf-8")
         with self.assertRaises(report_processor.FailExtractException):
-            self.processor._extract_and_create_slices(buffer_content)
+            await self.processor._extract_and_create_slices(buffer_content)
 
-    def test_create_slice_invalid(self):
+    async def test_create_slice_invalid(self):
         """Test the create slice method with an invalid slice."""
         report_json = None
         slice_id = "1234556"
         with self.assertRaises(Exception):
             options = {"report_json": report_json, "report_slice_id": slice_id, "source": str(uuid.uuid4())}
-            self.processor.create_report_slice(options)
+            await self.processor.create_report_slice(options)
 
-    def test_extract_and_create_slices_two_reps(self):
+    async def test_extract_and_create_slices_two_reps(self):
         """Testing the extract method with valid buffer content."""
         source_uuid = str(uuid.uuid4())
         metadata_json = {
@@ -738,11 +766,11 @@ class ReportProcessorTests(TransactionTestCase):
         self.processor.report_or_slice = self.report_record
         self.processor.account_number = "0001"
         buffer_content = test_handler.create_tar_buffer(report_files)
-        result = self.processor._extract_and_create_slices(buffer_content)
+        result = await self.processor._extract_and_create_slices(buffer_content)
         expected_result = {"report_platform_id": "5f2cc1fd-ec66-4c67-be1b-171a595ce319", "source": source_uuid}
         self.assertEqual(result, expected_result)
 
-    def test_extract_and_create_slices_failure(self):
+    async def test_extract_and_create_slices_failure(self):
         """Testing the extract method failure no matching report_slice."""
         metadata_json = {
             "report_id": 1,
@@ -753,9 +781,9 @@ class ReportProcessorTests(TransactionTestCase):
         report_files = {"metadata.json": metadata_json}
         buffer_content = test_handler.create_tar_buffer(report_files)
         with self.assertRaises(report_processor.FailExtractException):
-            self.processor._extract_and_create_slices(buffer_content)
+            await self.processor._extract_and_create_slices(buffer_content)
 
-    def test_extract_and_create_slices_failure_invalid_metadata(self):
+    async def test_extract_and_create_slices_failure_invalid_metadata(self):
         """Testing the extract method failure no valid metadata."""
         metadata_json = {
             "report_id": 1,
@@ -767,17 +795,17 @@ class ReportProcessorTests(TransactionTestCase):
         report_files = {"metadata.json": metadata_json, "%s.json" % str(self.uuid): report_json}
         buffer_content = test_handler.create_tar_buffer(report_files)
         with self.assertRaises(report_processor.FailExtractException):
-            self.processor._extract_and_create_slices(buffer_content)
+            await self.processor._extract_and_create_slices(buffer_content)
 
-    def test_extract_and_create_slices_failure_no_metadata(self):
+    async def test_extract_and_create_slices_failure_no_metadata(self):
         """Testing the extract method failure no json file."""
         report_json = {"report_slice_id": "2345322", "report_platform_id": "5f2cc1fd-ec66-4c67-be1b-171a595ce319"}
         report_files = {"2345322.json": report_json}
         buffer_content = test_handler.create_tar_buffer(report_files)
         with self.assertRaises(report_processor.FailExtractException):
-            self.processor._extract_and_create_slices(buffer_content)
+            await self.processor._extract_and_create_slices(buffer_content)
 
-    def test__extract_and_create_slices_failure_invalid_json(self):
+    async def test__extract_and_create_slices_failure_invalid_json(self):
         """Testing the extract method failure invalid json."""
         metadata_json = {
             "report_id": "5f2cc1fd-ec66-4c67-be1b-171a595ce319",
@@ -788,9 +816,9 @@ class ReportProcessorTests(TransactionTestCase):
         report_files = {"2345322.json": report_json, "metadata.json": metadata_json}
         buffer_content = test_handler.create_tar_buffer(report_files)
         with self.assertRaises(report_processor.RetryExtractException):
-            self.processor._extract_and_create_slices(buffer_content)
+            await self.processor._extract_and_create_slices(buffer_content)
 
-    def test__extract_and_create_slices_failure_no_json(self):
+    async def test__extract_and_create_slices_failure_no_json(self):
         """Testing the extract method failure invalid json."""
         metadata_json = {
             "report_id": "5f2cc1fd-ec66-4c67-be1b-171a595ce319",
@@ -801,7 +829,7 @@ class ReportProcessorTests(TransactionTestCase):
         report_files = {"2345322.json": report_json, "metadata.json": metadata_json}
         buffer_content = test_handler.create_tar_buffer(report_files)
         with self.assertRaises(report_processor.FailExtractException):
-            self.processor._extract_and_create_slices(buffer_content)
+            await self.processor._extract_and_create_slices(buffer_content)
 
     def test_download_response_content_bad_url(self):
         """Test to verify download exceptions are handled."""
@@ -871,7 +899,7 @@ class ReportProcessorTests(TransactionTestCase):
                 self.processor.upload_message = {"url": self.payload_url}
                 self.processor._download_report()
 
-    def test_value_error__extract_and_create_slices(self):
+    async def test_value_error__extract_and_create_slices(self):
         """Testing value error when extracting json from tar.gz."""
         invalid_json = '["report_id": 1]'
         tar_buffer = io.BytesIO()
@@ -885,9 +913,9 @@ class ReportProcessorTests(TransactionTestCase):
         tar_buffer.seek(0)
         buffer_content = tar_buffer.getvalue()
         with self.assertRaises(report_processor.FailExtractException):
-            self.processor._extract_and_create_slices(buffer_content)
+            await self.processor._extract_and_create_slices(buffer_content)
 
-    def test_no_json_files__extract_and_create_slices(self):
+    async def test_no_json_files__extract_and_create_slices(self):
         """Testing no json files found in tar.gz."""
         invalid_json = '["report_id": 1]'
         tar_buffer = io.BytesIO()
@@ -901,9 +929,9 @@ class ReportProcessorTests(TransactionTestCase):
         tar_buffer.seek(0)
         buffer_content = tar_buffer.getvalue()
         with self.assertRaises(report_processor.FailExtractException):
-            self.processor._extract_and_create_slices(buffer_content)
+            await self.processor._extract_and_create_slices(buffer_content)
 
-    def test__extract_and_create_slices_general_except(self):
+    async def test__extract_and_create_slices_general_except(self):
         """Testing general exception raises retry exception."""
 
         def extract_side_effect():
@@ -912,7 +940,7 @@ class ReportProcessorTests(TransactionTestCase):
 
         with patch("processor.report_processor.tarfile.open", side_effect=extract_side_effect):
             with self.assertRaises(report_processor.RetryExtractException):
-                self.processor._extract_and_create_slices(None)
+                await self.processor._extract_and_create_slices(None)
 
     def test_calculating_queued_reports(self):
         """Test the calculate_queued_reports method."""

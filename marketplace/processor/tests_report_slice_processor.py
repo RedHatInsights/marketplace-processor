@@ -19,11 +19,12 @@ import asyncio
 import json
 import uuid
 from datetime import datetime
+from unittest import IsolatedAsyncioTestCase
 from unittest.mock import Mock
 from unittest.mock import patch
 
 import pytz
-from django.test import TestCase
+from django import db
 from prometheus_client import REGISTRY
 
 from api.models import Report
@@ -34,10 +35,12 @@ from processor import report_consumer as msg_handler
 from processor import report_slice_processor
 from processor import tests_report_consumer as test_handler
 
+# from django.test import TestCase
+
 
 # pylint: disable=too-many-public-methods
 # pylint: disable=protected-access,too-many-lines,too-many-instance-attributes
-class ReportSliceProcessorTests(TestCase):
+class ReportSliceProcessorTests(IsolatedAsyncioTestCase):
     """Test Cases for the Message processor."""
 
     def setUp(self):
@@ -92,6 +95,11 @@ class ReportSliceProcessorTests(TestCase):
         self.report_record.save()
         self.processor = report_slice_processor.ReportSliceProcessor()
         self.processor.report = self.report_slice
+
+    def tearDown(self):
+        self.report_slice.delete()
+        self.report_record.delete()
+        db.connections.close_all()
 
     def check_variables_are_reset(self):
         """Check that report processor members have been cleared."""
@@ -188,6 +196,9 @@ class ReportSliceProcessorTests(TestCase):
 
     def test_archive_report_and_slices_in_failed_state(self):
         """Test the archive method in a failed state."""
+        report_archives = ReportArchive.objects.all()
+        for report_archive in report_archives:
+            report_archive.delete()
         self.report_record.ready_to_archive = True
         self.report_record.report_platform_id = str(self.uuid)
         self.report_record.save()
@@ -209,11 +220,16 @@ class ReportSliceProcessorTests(TestCase):
         self.assertEqual(str(archived.report_platform_id), str(self.uuid))
         self.assertEqual(str(archived_slice.report_platform_id), str(self.uuid))
         self.assertIsNotNone(archived_slice.processing_end_time)
+        archived_slice.delete()
+        archived.delete()
         # assert the processor was reset
         self.check_variables_are_reset()
 
     def test_archive_report_and_slices_in_success_state(self):
         """Test the archive method in a failed state."""
+        report_archives = ReportArchive.objects.all()
+        for report_archive in report_archives:
+            report_archive.delete()
         self.report_record.ready_to_archive = True
         self.report_record.report_platform_id = str(self.uuid)
         self.report_record.save()
@@ -239,6 +255,9 @@ class ReportSliceProcessorTests(TestCase):
 
     def test_archive_report_and_slices_not_ready(self):
         """Test the archive method with slice not ready."""
+        archives = ReportArchive.objects.filter(account=self.report_record.account)
+        for archive in archives:
+            archive.delete()
         self.report_record.ready_to_archive = True
         self.report_record.report_platform_id = str(self.uuid)
         self.report_record.save()

@@ -86,6 +86,9 @@ server-migrate:
 serve:
 	DJANGO_READ_DOT_ENV_FILE=True $(PYTHON) $(PYDIR)/manage.py runserver 127.0.0.1:8001
 
+gunicorn:
+	DJANGO_READ_DOT_ENV_FILE=True gunicorn "config.wsgi" -c "./marketplace/config/gunicorn.py" --chdir=./marketplace --bind=127.0.0.1:8001 --access-logfile=-
+
 server-static:
 	mkdir -p ./marketplace/static/client
 	$(PYTHON) marketplace/manage.py collectstatic --settings config.settings.local --no-input
@@ -93,7 +96,7 @@ server-static:
 server-init: server-migrate server-static
 
 unittest:
-	$(PYTHON) $(PYDIR)/manage.py test $(PYDIR) -v 2
+	$(PYTHON) $(PYDIR)/manage.py test $(PYDIR) -v 2 --noinput --keepdb
 
 test-coverage:
 	tox -e py36 --

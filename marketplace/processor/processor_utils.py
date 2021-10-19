@@ -66,10 +66,11 @@ def stop_all_event_loops():
             # the only processor with a consumer is the ReportConsumer
             # so we check the class and stop the consumer if we have a
             # ReportConsumer instance - otherwise we stop a producer
-            if i.__class__.__name__ == "ReportConsumer":
-                i.consumer.close()
-            else:
-                i.producer.close()
+            if i:
+                if i.__class__.__name__ == "ReportConsumer" and i.consumer:
+                    i.consumer.close()
+                elif i.__class__.__name__ == "ReportProcessor" and i.producer:
+                    i.producer.close()
         except Exception as err:  # pylint:disable=broad-except
             LOG.error(format_message(prefix, "The following error occurred: %s" % err))
     try:

@@ -19,14 +19,18 @@ import asyncio
 import io
 import json
 import tarfile
+from unittest import IsolatedAsyncioTestCase
 from unittest.mock import Mock
 from unittest.mock import patch
 
+from asgiref.sync import sync_to_async
 from asynctest import CoroutineMock
-from django.test import TestCase
+from django import db
 
 import processor.report_consumer as msg_handler
 from api.models import Report
+
+# from django.test import TestCase
 
 
 def create_tar_buffer(files_data, encoding="utf-8", meta_encoding="utf-8"):
@@ -72,7 +76,7 @@ class KafkaMsg:  # pylint:disable=too-few-public-methods
         return self._value
 
 
-class KafkaMsgHandlerTest(TestCase):
+class KafkaMsgHandlerTest(IsolatedAsyncioTestCase):
     """Test Cases for the Kafka msg handler."""
 
     def setUp(self):
@@ -82,7 +86,7 @@ class KafkaMsgHandlerTest(TestCase):
 
     def tearDown(self):
         """Remove test setup."""
-        pass
+        db.connections.close_all()
 
     def test_format_message_no_account_report(self):
         """Test format message without account or report id."""
@@ -114,7 +118,7 @@ class KafkaMsgHandlerTest(TestCase):
             return_value={"account": "8910", "request_id": "1234"},
         ):
             await self.report_consumer.save_message_and_ack(mkt_msg)
-            report = Report.objects.get(account="8910")
+            report = await sync_to_async(Report.objects.get)(account="8910")
             self.assertEqual(json.loads(report.upload_srv_kafka_msg), {"account": "8910", "request_id": "1234"})
             self.assertEqual(report.state, Report.NEW)
 
@@ -122,7 +126,7 @@ class KafkaMsgHandlerTest(TestCase):
         with patch("processor.report_consumer.ReportConsumer.unpack_consumer_record", return_value={"foo": "bar"}):
             await self.report_consumer.save_message_and_ack(mkt_msg)
             with self.assertRaises(Report.DoesNotExist):
-                Report.objects.get(upload_srv_kafka_msg=json.dumps({"foo": "bar"}))
+                await sync_to_async(Report.objects.get)(upload_srv_kafka_msg=json.dumps({"foo": "bar"}))
 
         # test general exception
         def raise_error():
@@ -135,7 +139,7 @@ class KafkaMsgHandlerTest(TestCase):
             return_value={"rh_account": "1112", "request_id": "1234"},
         ):
             await self.report_consumer.save_message_and_ack(mkt_msg)
-            report = Report.objects.get(account="1112")
+            report = await sync_to_async(Report.objects.get)(account="1112")
             self.assertEqual(json.loads(report.upload_srv_kafka_msg), {"rh_account": "1112", "request_id": "1234"})
             self.assertEqual(report.state, Report.NEW)
 
