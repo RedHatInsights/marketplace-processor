@@ -133,3 +133,6 @@ dmypy.json
 temp/
 
 scripts/config/.upload_env
+
+#sonarqube
+sonarqube/

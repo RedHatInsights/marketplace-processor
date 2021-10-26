@@ -45,6 +45,7 @@ help:
 	@echo "reinit-db                remove db and start a new one"
 	@echo "manifest                 create/update manifest for product security"
 	@echo "check-manifest           check that the manifest is up to date"
+	@echo "scan_project             run security scan"
 	@echo ""
 	@echo "--- Commands using an OpenShift Cluster ---"
 	@echo "oc-clean                 stop openshift cluster & remove local config data"
@@ -163,6 +164,9 @@ manifest:
 
 check-manifest:
 	./.travis/check_manifest.sh
+
+scan_project:
+	./sonarqube.sh
 
 # Local commands for working with OpenShift
 oc-up:
