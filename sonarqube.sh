@@ -10,7 +10,7 @@ mkdir $PWD/sonarqube/extract/
 mkdir $PWD/sonarqube/certs/
 mkdir $PWD/sonarqube/store/
 
-curl -o $PWD/sonarqube/certs/RH-IT-Root-CA.crt --insecure https://password.corp.redhat.com/RH-IT-Root-CA.crt
+curl -o $PWD/sonarqube/certs/RH-IT-Root-CA.crt --insecure $ROOT_CA_CERT_URL
 
 $JAVA_HOME/bin/keytool \
   -keystore /$PWD/sonarqube/store/RH-IT-Root-CA.keystore \
