@@ -44,15 +44,13 @@ sonar-scanner \
   -Dsonar.login=$SONARQUBE_TOKEN
 
 
-ls -lta $PWD/.scannerwork
-cat $PWD/.scannerwork/report-task.txt
+ls -lta $PWD/.scannerwork/ucfg2
 
-echo "ghprbPullId=${ghprbPullId}"
-
-if [[ -z "${ghprbPullId}" ]]; then
-  curl -s -H "Authorization: token ${GITHUB_TOKEN}" \
-   -X POST -d '{"body": "Adding SonarQube Comment"}' \
-   "https://api.github.com/repos/${ghprbGhRepository}/issues/${ghprbPullId}/comments"
+if [ -z "${ghprbPullId}" ]; then
+  echo "Adding PR Comment."
+  curl -s -H "Authorization: Token ${GITHUB_TOKEN}" -X POST -d '{"body": "Adding SonarQube Comment"}' "https://api.github.com/repos/${ghprbGhRepository}/issues/${ghprbPullId}/comments"
+else
+  echo "No PR Comment needed."
 fi
 
 mkdir -p $WORKSPACE/artifacts
