@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set
+
 mkdir $PWD/sonarqube/
 mkdir $PWD/sonarqube/download/
 mkdir $PWD/sonarqube/extract/
