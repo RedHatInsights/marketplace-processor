@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set
-
 mkdir $PWD/sonarqube/
 mkdir $PWD/sonarqube/download/
 mkdir $PWD/sonarqube/extract/
@@ -44,6 +42,17 @@ sonar-scanner \
   -Dsonar.host.url=$SONARQUBE_REPORT_URL \
   -Dsonar.projectVersion=$COMMIT_SHORT \
   -Dsonar.login=$SONARQUBE_TOKEN
+
+
+ls -lta $PWD/.scannerwork
+
+if [[ -z "${ghprbPullId}" ]]; then
+
+  curl -s -H "Authorization: token ${GITHUB_TOKEN}" \
+   -X POST -d '{"body": "Adding SonarQube Comment"}' \
+   "https://api.github.com/repos/${ghprbGhRepository}/issues/${ghprbPullId}/comments"
+
+fi
 
 mkdir -p $WORKSPACE/artifacts
 cat << EOF > ${WORKSPACE}/artifacts/junit-dummy.xml
