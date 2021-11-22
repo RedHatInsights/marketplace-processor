@@ -45,13 +45,14 @@ sonar-scanner \
 
 
 ls -lta $PWD/.scannerwork
+cat $PWD/.scannerwork/report-task.txt
+
+echo "ghprbPullId=${ghprbPullId}"
 
 if [[ -z "${ghprbPullId}" ]]; then
-
   curl -s -H "Authorization: token ${GITHUB_TOKEN}" \
    -X POST -d '{"body": "Adding SonarQube Comment"}' \
    "https://api.github.com/repos/${ghprbGhRepository}/issues/${ghprbPullId}/comments"
-
 fi
 
 mkdir -p $WORKSPACE/artifacts
