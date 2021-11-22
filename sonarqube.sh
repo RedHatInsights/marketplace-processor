@@ -44,13 +44,13 @@ sonar-scanner \
   -Dsonar.login=$SONARQUBE_TOKEN
 
 
-ls -lta $PWD/.scannerwork/ucfg2
+ls -lta $PWD/.scannerwork/ucfg2/python/
 
 if [ -z "${ghprbPullId}" ]; then
+  echo "No PR Comment needed."
+else
   echo "Adding PR Comment."
   curl -s -H "Authorization: Token ${GITHUB_TOKEN}" -X POST -d '{"body": "Adding SonarQube Comment"}' "https://api.github.com/repos/${ghprbGhRepository}/issues/${ghprbPullId}/comments"
-else
-  echo "No PR Comment needed."
 fi
 
 mkdir -p $WORKSPACE/artifacts
