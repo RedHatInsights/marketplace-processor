@@ -13,7 +13,9 @@ objects:
     deployments:
     - name: service
       minReplicas: ${{MIN_REPLICAS}}
-      web: true
+      webServices:
+        public:
+          enabled: True
       podSpec:
         image: ${IMAGE}:${IMAGE_TAG}
         livenessProbe:
@@ -75,6 +77,8 @@ objects:
     - ingress
     database:
       name: marketplace
+    testing:
+      iqePlugin: marketplace
 
 parameters:
 - name: MARKETPLACE_BUCKET
