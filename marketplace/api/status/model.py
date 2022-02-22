@@ -39,7 +39,7 @@ class Status:
 
         :returns: A build number
         """
-        git_commit = os.environ.get("OPENSHIFT_BUILD_COMMIT", None)
+        git_commit = os.environ.get("GIT_COMMIT", None)
         if git_commit is None:
             git_commit = subprocess.run(["git", "describe", "--always"], stdout=subprocess.PIPE, check=True)
             if git_commit.stdout:
