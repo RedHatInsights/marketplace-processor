@@ -3,7 +3,7 @@ import json
 
 lockfile = {}
 
-CONTAINER_NAME = "registry.redhat.io/ubi8/python-38:latest"
+CONTAINER_NAME = "registry.access.redhat.com/ubi8/ubi-minimal:lastest"
 
 with open("Pipfile.lock") as json_file:
     lockfile = json.load(json_file)
