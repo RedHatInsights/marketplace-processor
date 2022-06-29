@@ -38,6 +38,10 @@ from api.models import Status
 from api.serializers import ReportSerializer
 from api.serializers import ReportSliceSerializer
 from config.settings.base import INSIGHTS_KAFKA_ADDRESS
+from config.settings.base import INSIGHTS_KAFKA_USERNAME
+from config.settings.base import INSIGHTS_KAFKA_PASSWORD
+from config.settings.base import INSIGHTS_KAFKA_SEC_PROT
+from config.settings.base import INSIGHTS_KAFKA_SASL_MECH
 from config.settings.base import RETRIES_ALLOWED
 from config.settings.base import RETRY_TIME
 from processor.abstract_processor import AbstractProcessor
@@ -758,7 +762,12 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
         if self.producer is not None:
             self.producer.close()
         self.producer = AIOProducer(
-            {"bootstrap.servers": INSIGHTS_KAFKA_ADDRESS, "message.timeout.ms": 1000}, loop=REPORT_PROCESSING_LOOP
+            {"bootstrap.servers": INSIGHTS_KAFKA_ADDRESS, 
+            "message.timeout.ms": 1000, 
+            "security_protocol": INSIGHTS_KAFKA_SEC_PROT,
+            "sasl_mechanism": INSIGHTS_KAFKA_SASL_MECH,
+            "sasl_plain_username": INSIGHTS_KAFKA_USERNAME,
+            "sasl_plain_password": INSIGHTS_KAFKA_PASSWORD}, loop=REPORT_PROCESSING_LOOP
         )
         try:
             validation = {"hash": file_hash, "request_id": self.report_or_slice.request_id, "validation": self.status}
