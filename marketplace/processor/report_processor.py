@@ -761,14 +761,20 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
         self.prefix = "REPORT VALIDATION STATE ON KAFKA"
         if self.producer is not None:
             self.producer.close()
-        self.producer = AIOProducer(
-            {"bootstrap.servers": INSIGHTS_KAFKA_ADDRESS, 
-            "message.timeout.ms": 1000, 
-            "security_protocol": INSIGHTS_KAFKA_SEC_PROT,
-            "sasl_mechanism": INSIGHTS_KAFKA_SASL_MECH,
-            "sasl_plain_username": INSIGHTS_KAFKA_USERNAME,
-            "sasl_plain_password": INSIGHTS_KAFKA_PASSWORD}, loop=REPORT_PROCESSING_LOOP
-        )
+        if INSIGHTS_KAFKA_SEC_PROT is None or INSIGHTS_KAFKA_SASL_MECH is None or INSIGHTS_KAFKA_USERNAME is None or INSIGHTS_KAFKA_PASSWORD is None:
+            self.producer = AIOProducer(# old way 
+                {"bootstrap.servers": INSIGHTS_KAFKA_ADDRESS, 
+                "message.timeout.ms": 1000}, loop=REPORT_PROCESSING_LOOP
+            )
+        else:
+            self.producer = AIOProducer(# new way
+                {"bootstrap.servers": INSIGHTS_KAFKA_ADDRESS, 
+                "message.timeout.ms": 1000, 
+                "security_protocol": INSIGHTS_KAFKA_SEC_PROT,
+                "sasl_mechanism": INSIGHTS_KAFKA_SASL_MECH,
+                "sasl_plain_username": INSIGHTS_KAFKA_USERNAME,
+                "sasl_plain_password": INSIGHTS_KAFKA_PASSWORD}, loop=REPORT_PROCESSING_LOOP
+            )
         try:
             validation = {"hash": file_hash, "request_id": self.report_or_slice.request_id, "validation": self.status}
             msg = bytes(json.dumps(validation), "utf-8")

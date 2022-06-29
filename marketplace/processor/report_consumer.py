@@ -82,19 +82,27 @@ class KafkaMsgHandlerError(Exception):
 
 def get_consumer():
     """Create a Kafka consumer."""
-    consumer = Consumer(
+    if INSIGHTS_KAFKA_SEC_PROT is None or INSIGHTS_KAFKA_SASL_MECH is None 
+    or INSIGHTS_KAFKA_USERNAME is None or INSIGHTS_KAFKA_PASSWORD is None:
+        consumer = Consumer(#old connection method
+        {"bootstrap.servers": INSIGHTS_KAFKA_ADDRESS,
+        "group.id": "mkt-group",
+        "queued.max.messages.kbytes": 1024,
+        "enable.auto.commit": False}, logger=LOG)
+    else:
+        consumer = Consumer(#new connection method
         {
-            "bootstrap.servers": INSIGHTS_KAFKA_ADDRESS,
-            "group.id": "mkt-group",
-            "queued.max.messages.kbytes": 1024,
-            "enable.auto.commit": False,
-            "security_protocol": INSIGHTS_KAFKA_SEC_PROT,
-            "sasl_mechanism": INSIGHTS_KAFKA_SASL_MECH,
-            "sasl_plain_username": INSIGHTS_KAFKA_USERNAME,
-            "sasl_plain_password": INSIGHTS_KAFKA_PASSWORD
+        "bootstrap.servers": INSIGHTS_KAFKA_ADDRESS,
+        "group.id": "mkt-group",
+        "queued.max.messages.kbytes": 1024,
+        "enable.auto.commit": False
+        "security_protocol": INSIGHTS_KAFKA_SEC_PROT,
+        "sasl_mechanism": INSIGHTS_KAFKA_SASL_MECH,
+        "sasl_plain_username": INSIGHTS_KAFKA_USERNAME,
+        "sasl_plain_password": INSIGHTS_KAFKA_PASSWORD
         },
-        logger=LOG,
-    )
+        logger=LOG
+        )
     consumer.subscribe([MKT_TOPIC])
     return consumer
 
