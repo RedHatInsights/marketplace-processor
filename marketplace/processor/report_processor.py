@@ -761,13 +761,12 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
         self.prefix = "REPORT VALIDATION STATE ON KAFKA"
         if self.producer is not None:
             self.producer.close()
-        if INSIGHTS_KAFKA_SEC_PROT is None or INSIGHTS_KAFKA_SASL_MECH is None or INSIGHTS_KAFKA_USERNAME is None or INSIGHTS_KAFKA_PASSWORD is None:
-            self.producer = AIOProducer(# old way 
+        if None in [INSIGHTS_KAFKA_SEC_PROT, INSIGHTS_KAFKA_SASL_MECH, INSIGHTS_KAFKA_USERNAME, INSIGHTS_KAFKA_PASSWORD]:            self.producer = AIOProducer(# old way 
                 {"bootstrap.servers": INSIGHTS_KAFKA_ADDRESS, 
                 "message.timeout.ms": 1000}, loop=REPORT_PROCESSING_LOOP
             )
         else:
-            self.producer = AIOProducer(# new way
+            self.producer = AIOProducer(
                 {"bootstrap.servers": INSIGHTS_KAFKA_ADDRESS, 
                 "message.timeout.ms": 1000, 
                 "security_protocol": INSIGHTS_KAFKA_SEC_PROT,
