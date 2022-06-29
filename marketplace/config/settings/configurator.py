@@ -20,10 +20,10 @@ Handler module for gathering configuration data.
 from .env import ENVIRONMENT
 
 
-from app_common_python import isClowderEnabled
+from app_common_python import LoadedConfig, isClowderEnabled
 CLOWDER_ENABLED = isClowderEnabled()
 if CLOWDER_ENABLED:
-    from app_common_python import LoadedConfig, KafkaTopics, ObjectBuckets
+    from app_common_python import KafkaTopics, ObjectBuckets
 
 
 class Configurator:
