@@ -20,11 +20,9 @@ Handler module for gathering configuration data.
 from .env import ENVIRONMENT
 
 
-from app_common_python import LoadedConfig, isClowderEnabled
-CLOWDER_ENABLED = isClowderEnabled()
+CLOWDER_ENABLED = ENVIRONMENT.bool("CLOWDER_ENABLED", default=False) 
 if CLOWDER_ENABLED:
-    from app_common_python import KafkaTopics, ObjectBuckets
-
+    from app_common_python import LoadedConfig, KafkaTopics, ObjectBuckets
 
 class Configurator:
     """Obtain configuration based on mode."""
