@@ -160,7 +160,27 @@ class EnvConfigurator(Configurator):
     def get_kafka_topic():
         """Obtain kafka topic."""
         return ENVIRONMENT.get_value("INSIGHTS_KAFKA_TOPIC", default="platform.upload.mkt")
+        
+    @staticmethod
+    def get_kafka_username():
+        """Obtain kafka username."""
+        return None
 
+    @staticmethod 
+    def get_kafka_password():
+        """Obtain kafka password."""
+        return None
+
+    @staticmethod
+    def get_kafka_sasl_mechanism():
+        """Obtain kafka sasl mechanism."""
+        return None
+
+    @staticmethod 
+    def get_kafka_security_protocol():
+        """Obtain kafka security protocol."""
+        return None
+    
     @staticmethod
     def get_cloudwatch_access_id():
         """Obtain cloudwatch access id."""
