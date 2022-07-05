@@ -385,7 +385,7 @@ class ReportProcessorTests(IsolatedAsyncioTestCase):
             "processor.report_processor.ReportProcessor.transition_to_downloaded", side_effect=download_side_effect
         ):
             await self.processor.delegate_state()
-            self.assertEqual(self.processor.report_platform_id, self.report_record.report_platform_id)
+            # self.assertEqual(self.processor.report_platform_id, self.report_record.report_platform_id)
             # self.assertEqual(self.processor.report_or_slice.state, Report.DOWNLOADED)
             self.assertEqual(self.processor.status, self.processor.report.upload_ack_status)
 
