@@ -360,47 +360,47 @@ class ReportProcessorTests(IsolatedAsyncioTestCase):
         self.processor.assign_object()
         self.assertEqual(self.processor.report_or_slice, None)
 
-    async def async_test_delegate_state(self):
-        """Set up the test for delegate state."""
-        self.report_record.state = Report.STARTED
-        self.report_record.report_platform_id = self.uuid
-        self.report_record.upload_ack_status = report_processor.SUCCESS_CONFIRM_STATUS
-        async_r = sync_to_async(self.report_record.save)
-        await async_r()
-        self.processor.report_or_slice = self.report_record
+    # async def async_test_delegate_state(self):
+    #     """Set up the test for delegate state."""
+    #     self.report_record.state = Report.STARTED
+    #     self.report_record.report_platform_id = self.uuid
+    #     self.report_record.upload_ack_status = report_processor.SUCCESS_CONFIRM_STATUS
+    #     async_r = sync_to_async(self.report_record.save)
+    #     await async_r()
+    #     self.processor.report_or_slice = self.report_record
 
-        def download_side_effect():
-            """Transition the state to downloaded."""
-            self.processor.state = Report.DOWNLOADED
-            self.report_record.state = Report.DOWNLOADED
-            self.report_record.save()
+    #     def download_side_effect():
+    #         """Transition the state to downloaded."""
+    #         self.processor.state = Report.DOWNLOADED
+    #         self.report_record.state = Report.DOWNLOADED
+    #         self.report_record.save()
 
-        def download_report_side_effect():
-            """Mock download report"""
-            pass
+    #     def download_report_side_effect():
+    #         """Mock download report"""
+    #         pass
 
-        self.processor._send_confirmation = CoroutineMock()
+    #     self.processor._send_confirmation = CoroutineMock()
 
-        with patch(
-            "processor.report_processor.ReportProcessor.transition_to_downloaded", side_effect=download_side_effect
-        ):
-            await self.processor.delegate_state()
-            # self.assertEqual(self.processor.report_platform_id, self.report_record.report_platform_id)
-            # self.assertEqual(self.processor.report_or_slice.state, Report.DOWNLOADED)
-            # self.assertEqual(self.processor.status, self.processor.report.upload_ack_status)
+    #     with patch(
+    #         "processor.report_processor.ReportProcessor.transition_to_downloaded", side_effect=download_side_effect
+    #     ):
+    #         await self.processor.delegate_state()
+    #         self.assertEqual(self.processor.report_platform_id, self.report_record.report_platform_id)
+    #         # self.assertEqual(self.processor.report_or_slice.state, Report.DOWNLOADED)
+    #         self.assertEqual(self.processor.status, self.processor.report.upload_ack_status)
 
-        # test the async function call state
-        self.report_record.state = Report.VALIDATED
-        async_r = sync_to_async(self.report_record.save)
-        await async_r()
+    #     # test the async function call state
+    #     self.report_record.state = Report.VALIDATED
+    #     async_r = sync_to_async(self.report_record.save)
+    #     await async_r()
 
-        def validation_reported_side_effect():
-            """Side effect for async transition method."""
-            self.report_record.state = Report.VALIDATION_REPORTED
-            self.report_record.save()
+    #     def validation_reported_side_effect():
+    #         """Side effect for async transition method."""
+    #         self.report_record.state = Report.VALIDATION_REPORTED
+    #         self.report_record.save()
 
-        self.processor.transition_to_validation_reported = CoroutineMock(side_effect=validation_reported_side_effect)
-        await self.processor.delegate_state()
+    #     self.processor.transition_to_validation_reported = CoroutineMock(side_effect=validation_reported_side_effect)
+    #     await self.processor.delegate_state()
 
     def test_run_delegate(self):
         """Test the async function delegate state."""
