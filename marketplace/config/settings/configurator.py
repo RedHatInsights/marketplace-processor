@@ -164,22 +164,22 @@ class EnvConfigurator(Configurator):
     @staticmethod
     def get_kafka_username():
         """Obtain kafka username."""
-        return ENVIRONMENT.get_value("KAFKA_USER_NAME")
+        return ENVIRONMENT.get_value("KAFKA_USER_NAME", default=None)
 
     @staticmethod 
     def get_kafka_password():
         """Obtain kafka password."""
-        return ENVIRONMENT.get_value("KAFKA_PASSWORD")
+        return ENVIRONMENT.get_value("KAFKA_PASSWORD", default=None)
 
     @staticmethod
     def get_kafka_sasl_mechanism():
         """Obtain kafka sasl mechanism."""
-        return ENVIRONMENT.get_value("KAFKA_SECURITY_PROTOCOL")
+        return ENVIRONMENT.get_value("KAFKA_SECURITY_PROTOCOL", default=None)
 
     @staticmethod 
     def get_kafka_security_protocol():
         """Obtain kafka security protocol."""
-        return ENVIRONMENT.get_value("KAFKA_SASL_MECH")
+        return ENVIRONMENT.get_value("KAFKA_SASL_MECH", default=None)
     
     @staticmethod
     def get_cloudwatch_access_id():
