@@ -18,7 +18,7 @@
     "default": {
         "app-common-python": {
             "hashes": [
-                "sha256:6ce528b042c3496e9870f0854ea69c04e0b3d414"
+                "sha256:53b4a293076713d3c77369d5d4fc9ac9dc28f1dc06564ab73f615420d2e9615f"
             ],
             "index": "pypi",
             "version": "==0.2.2"
