@@ -1,5 +1,5 @@
 mgmt_services/marketplace:processor/registry.access.redhat.com/ubi8/ubi-minimal:lastest
-mgmt_services/marketplace:processor/python-app-common-python:0.1.2.pipfile
+mgmt_services/marketplace:processor/python-app-common-python:0.2.3.pipfile
 mgmt_services/marketplace:processor/python-asgiref:3.5.0.pipfile
 mgmt_services/marketplace:processor/python-boto3:1.18.64.pipfile
 mgmt_services/marketplace:processor/python-botocore:1.21.65.pipfile
