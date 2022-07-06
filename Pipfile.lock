@@ -21,7 +21,7 @@
                 "sha256:c0a0ff2ecf58f28f9252349ca32b7b97086163fdbb196a29d05561f4caad32a1"
             ],
             "index": "pypi",
-            "version": "==0.1.2"
+            "version": "==0.2.3"
         },
         "asgiref": {
             "hashes": [
