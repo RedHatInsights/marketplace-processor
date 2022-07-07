@@ -88,9 +88,9 @@ def get_consumer():
                 "bootstrap.servers": INSIGHTS_KAFKA_ADDRESS,
                 "group.id": "mkt-group",
                 "queued.max.messages.kbytes": 1024,
-                "enable.auto.commit": False, 
-            }, 
-            logger=LOG, 
+                "enable.auto.commit": False,
+            },
+            logger=LOG,
         )
     else:
         consumer = Consumer(
