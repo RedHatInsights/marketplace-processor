@@ -760,7 +760,7 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
         """
         self.prefix = "REPORT VALIDATION STATE ON KAFKA"
         if self.producer is not None:
-            self.producer.close()      
+            self.producer.close()
         if None in [
             INSIGHTS_KAFKA_SEC_PROT,
             INSIGHTS_KAFKA_SASL_MECH,
