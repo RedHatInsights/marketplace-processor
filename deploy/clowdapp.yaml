@@ -49,37 +49,37 @@ objects:
           valueFrom:
             secretKeyRef:
               key: hostname
-              name: clowder-oauth 
+              name: clowder-oauth
               optional: true
         - name: KAFKA_PORT
           valueFrom:
             secretKeyRef:
               key: port
-              name: clowder-oauth 
+              name: clowder-oauth
               optional: true
         - name: KAFKA_USER_NAME
           valueFrom:
             secretKeyRef:
               key: username
-              name: clowder-oauth 
+              name: clowder-oauth
               optional: true
         - name: KAFKA_PASSWORD
           valueFrom:
             secretKeyRef:
               key: password
-              name: clowder-oauth 
+              name: clowder-oauth
               optional: true
         - name: KAFKA_SECURITY_PROTOCOL
           valueFrom:
             secretKeyRef:
               key: security_protocol
-              name: client-config 
+              name: client-config
               optional: true
         - name: KAFKA_SASL_MECH
           valueFrom:
             secretKeyRef:
               key: sasl_mechanism
-              name: client-config 
+              name: client-config
               optional: true
         - name: MARKETPLACE_BUCKET
           value: ${MARKETPLACE_BUCKET}

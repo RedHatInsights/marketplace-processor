@@ -17,12 +17,12 @@
 """
 Handler module for gathering configuration data.
 """
+from app_common_python import LoadedConfig, isClowderEnabled
 from .env import ENVIRONMENT
 
-from app_common_python import isClowderEnabled
-CLOWDER_ENABLED = isClowderEnabled() 
+CLOWDER_ENABLED = isClowderEnabled()
 if CLOWDER_ENABLED:
-    from app_common_python import LoadedConfig, KafkaTopics, ObjectBuckets
+    from app_common_python import KafkaTopics, ObjectBuckets
 
 class Configurator:
     """Obtain configuration based on mode."""
@@ -166,7 +166,7 @@ class EnvConfigurator(Configurator):
         """Obtain kafka username."""
         return ENVIRONMENT.get_value("KAFKA_USER_NAME", default=None)
 
-    @staticmethod 
+    @staticmethod
     def get_kafka_password():
         """Obtain kafka password."""
         return ENVIRONMENT.get_value("KAFKA_PASSWORD", default=None)
@@ -176,7 +176,7 @@ class EnvConfigurator(Configurator):
         """Obtain kafka sasl mechanism."""
         return ENVIRONMENT.get_value("KAFKA_SECURITY_PROTOCOL", default=None)
 
-    @staticmethod 
+    @staticmethod
     def get_kafka_security_protocol():
         """Obtain kafka security protocol."""
         return ENVIRONMENT.get_value("KAFKA_SASL_MECH", default=None)
@@ -304,7 +304,7 @@ class ClowderConfigurator(Configurator):
         """Obtain kafka username."""
         return LoadedConfig.kafka.brokers[0].sasl.username
 
-    @staticmethod 
+    @staticmethod
     def get_kafka_password():
         """Obtain kafka password."""
         return LoadedConfig.kafka.brokers[0].sasl.password
@@ -314,7 +314,7 @@ class ClowderConfigurator(Configurator):
         """Obtain kafka sasl mechanism."""
         return LoadedConfig.kafka.brokers[0].sasl.saslMechanism
 
-    @staticmethod 
+    @staticmethod
     def get_kafka_security_protocol():
         """Obtain kafka security protocol."""
         return LoadedConfig.kafka.brokers[0].sasl.securityProtocol
