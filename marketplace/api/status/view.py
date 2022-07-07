@@ -47,7 +47,8 @@ if None in [INSIGHTS_KAFKA_SEC_PROT, INSIGHTS_KAFKA_SASL_MECH, INSIGHTS_KAFKA_US
 else:
     BROKER_CONNECTION = BrokerConnection(INSIGHTS_KAFKA_HOST, 
                                          int(INSIGHTS_KAFKA_PORT),
-                                         socket.AF_UNSPEC, security_protocol=INSIGHTS_KAFKA_SEC_PROT, 
+                                         socket.AF_UNSPEC, 
+                                         security_protocol=INSIGHTS_KAFKA_SEC_PROT, 
                                          sasl_mechanism=INSIGHTS_KAFKA_SASL_MECH,
                                          sasl_plain_username=INSIGHTS_KAFKA_USERNAME,
                                          sasl_plain_password=INSIGHTS_KAFKA_PASSWORD)
