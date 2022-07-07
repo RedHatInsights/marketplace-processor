@@ -17,7 +17,8 @@
 """
 Handler module for gathering configuration data.
 """
-from app_common_python import LoadedConfig, isClowderEnabled
+from app_common_python import isClowderEnabled
+from app_common_python import LoadedConfig
 from .env import ENVIRONMENT
 
 CLOWDER_ENABLED = isClowderEnabled()
@@ -160,7 +161,7 @@ class EnvConfigurator(Configurator):
     def get_kafka_topic():
         """Obtain kafka topic."""
         return ENVIRONMENT.get_value("INSIGHTS_KAFKA_TOPIC", default="platform.upload.mkt")
-        
+
     @staticmethod
     def get_kafka_username():
         """Obtain kafka username."""
@@ -180,7 +181,7 @@ class EnvConfigurator(Configurator):
     def get_kafka_security_protocol():
         """Obtain kafka security protocol."""
         return ENVIRONMENT.get_value("KAFKA_SASL_MECH", default=None)
-    
+
     @staticmethod
     def get_cloudwatch_access_id():
         """Obtain cloudwatch access id."""
