@@ -103,7 +103,7 @@ if CW_AWS_ACCESS_KEY_ID and ENABLE_CLOUDWATCH_LOGGING:
         WATCHTOWER_HANDLER = {
             "level": LOGGING_LEVEL,
             "class": "watchtower.CloudWatchLogHandler",
-            "boto3_session": BOTO3_SESSION,
+            "boto3_client": watchtower,
             "log_group": CW_LOG_GROUP,
             "stream_name": POD_NAME,
             "formatter": LOGGING_FORMATTER,
@@ -116,7 +116,7 @@ if CW_AWS_ACCESS_KEY_ID and ENABLE_CLOUDWATCH_LOGGING:
             WATCHTOWER_HANDLER = {
                 "level": LOGGING_LEVEL,
                 "class": "watchtower.CloudWatchLogHandler",
-                "boto3_session": BOTO3_SESSION,
+                "boto3_client": watchtower,
                 "log_group": CW_LOG_GROUP,
                 "stream_name": POD_NAME,
                 "formatter": LOGGING_FORMATTER,

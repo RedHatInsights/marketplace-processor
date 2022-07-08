@@ -1,12 +1,12 @@
 mgmt_services/marketplace:processor/registry.access.redhat.com/ubi8/ubi-minimal:lastest
 mgmt_services/marketplace:processor/python-app-common-python:0.2.3.pipfile
 mgmt_services/marketplace:processor/python-asgiref:3.5.2.pipfile
-mgmt_services/marketplace:processor/python-boto3:1.24.23.pipfile
-mgmt_services/marketplace:processor/python-botocore:1.27.23.pipfile
+mgmt_services/marketplace:processor/python-boto3:1.24.25.pipfile
+mgmt_services/marketplace:processor/python-botocore:1.27.25.pipfile
 mgmt_services/marketplace:processor/python-certifi:2022.6.15.pipfile
 mgmt_services/marketplace:processor/python-charset-normalizer:2.1.0.pipfile
 mgmt_services/marketplace:processor/python-confluent-kafka:1.9.0.pipfile
-mgmt_services/marketplace:processor/python-django:3.2.12.pipfile
+mgmt_services/marketplace:processor/python-django:3.2.14.pipfile
 mgmt_services/marketplace:processor/python-django-environ:0.9.0.pipfile
 mgmt_services/marketplace:processor/python-django-prometheus:1.1.0.pipfile
 mgmt_services/marketplace:processor/python-djangorestframework:3.13.1.pipfile
@@ -23,6 +23,6 @@ mgmt_services/marketplace:processor/python-requests:2.28.1.pipfile
 mgmt_services/marketplace:processor/python-s3transfer:0.6.0.pipfile
 mgmt_services/marketplace:processor/python-six:1.16.0.pipfile
 mgmt_services/marketplace:processor/python-sqlparse:0.3.0.pipfile
-mgmt_services/marketplace:processor/python-urllib3:1.26.9.pipfile
+mgmt_services/marketplace:processor/python-urllib3:1.26.10.pipfile
 mgmt_services/marketplace:processor/python-watchtower:3.0.0.pipfile
 mgmt_services/marketplace:processor/python-whitenoise:5.0.1.pipfile
