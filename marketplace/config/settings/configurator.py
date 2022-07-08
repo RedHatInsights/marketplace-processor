@@ -305,7 +305,7 @@ class ClowderConfigurator(Configurator):
     @staticmethod
     def get_kafka_username():
         """Obtain kafka username."""
-        return LoadedConfig.kafka.brokers[0].sasl.userName
+        return LoadedConfig.kafka.brokers[0].sasl.username
 
     @staticmethod
     def get_kafka_password():
