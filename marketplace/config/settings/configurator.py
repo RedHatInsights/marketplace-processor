@@ -305,22 +305,34 @@ class ClowderConfigurator(Configurator):
     @staticmethod
     def get_kafka_username():
         """Obtain kafka username."""
-        return LoadedConfig.kafka.brokers[0].sasl.username
+        if LoadedConfig.kafka.brokers[0].sasl is None:
+            return None
+        else:
+            return LoadedConfig.kafka.brokers[0].sasl.username
 
     @staticmethod
     def get_kafka_password():
         """Obtain kafka password."""
-        return LoadedConfig.kafka.brokers[0].sasl.password
+        if LoadedConfig.kafka.brokers[0].sasl is None:
+            return None
+        else:
+            return LoadedConfig.kafka.brokers[0].sasl.password
 
     @staticmethod
     def get_kafka_sasl_mechanism():
         """Obtain kafka sasl mechanism."""
-        return LoadedConfig.kafka.brokers[0].sasl.saslMechanism
+        if LoadedConfig.kafka.brokers[0].sasl is None:
+            return None
+        else:
+            return LoadedConfig.kafka.brokers[0].sasl.saslMechanism
 
     @staticmethod
     def get_kafka_security_protocol():
         """Obtain kafka security protocol."""
-        return LoadedConfig.kafka.brokers[0].sasl.securityProtocol
+        if LoadedConfig.kafka.brokers[0].sasl is None:
+            return None
+        else:
+            return LoadedConfig.kafka.brokers[0].sasl.securityProtocol
 
     @staticmethod
     def get_cloudwatch_access_id():
