@@ -17,12 +17,14 @@
 """
 Handler module for gathering configuration data.
 """
+from app_common_python import isClowderEnabled
+from app_common_python import LoadedConfig
+
 from .env import ENVIRONMENT
 
-
-CLOWDER_ENABLED = ENVIRONMENT.bool("CLOWDER_ENABLED", default=False)
+CLOWDER_ENABLED = isClowderEnabled()
 if CLOWDER_ENABLED:
-    from app_common_python import LoadedConfig, KafkaTopics, ObjectBuckets
+    from app_common_python import KafkaTopics, ObjectBuckets
 
 
 class Configurator:
@@ -163,6 +165,26 @@ class EnvConfigurator(Configurator):
         return ENVIRONMENT.get_value("INSIGHTS_KAFKA_TOPIC", default="platform.upload.mkt")
 
     @staticmethod
+    def get_kafka_username():
+        """Obtain kafka username."""
+        return ENVIRONMENT.get_value("KAFKA_USER_NAME", default=None)
+
+    @staticmethod
+    def get_kafka_password():
+        """Obtain kafka password."""
+        return ENVIRONMENT.get_value("KAFKA_PASSWORD", default=None)
+
+    @staticmethod
+    def get_kafka_sasl_mechanism():
+        """Obtain kafka sasl mechanism."""
+        return ENVIRONMENT.get_value("KAFKA_SECURITY_PROTOCOL", default=None)
+
+    @staticmethod
+    def get_kafka_security_protocol():
+        """Obtain kafka security protocol."""
+        return ENVIRONMENT.get_value("KAFKA_SASL_MECH", default=None)
+
+    @staticmethod
     def get_cloudwatch_access_id():
         """Obtain cloudwatch access id."""
         return ENVIRONMENT.get_value("CW_AWS_ACCESS_KEY_ID", default=None)
@@ -279,6 +301,38 @@ class ClowderConfigurator(Configurator):
     def get_kafka_topic():
         """Obtain kafka topic."""
         return KafkaTopics.get("platform.upload.mkt").name
+
+    @staticmethod
+    def get_kafka_username():
+        """Obtain kafka username."""
+        if LoadedConfig.kafka.brokers[0].sasl is None:
+            return None
+        else:
+            return LoadedConfig.kafka.brokers[0].sasl.username
+
+    @staticmethod
+    def get_kafka_password():
+        """Obtain kafka password."""
+        if LoadedConfig.kafka.brokers[0].sasl is None:
+            return None
+        else:
+            return LoadedConfig.kafka.brokers[0].sasl.password
+
+    @staticmethod
+    def get_kafka_sasl_mechanism():
+        """Obtain kafka sasl mechanism."""
+        if LoadedConfig.kafka.brokers[0].sasl is None:
+            return None
+        else:
+            return LoadedConfig.kafka.brokers[0].sasl.saslMechanism
+
+    @staticmethod
+    def get_kafka_security_protocol():
+        """Obtain kafka security protocol."""
+        if LoadedConfig.kafka.brokers[0].sasl is None:
+            return None
+        else:
+            return LoadedConfig.kafka.brokers[0].sasl.securityProtocol
 
     @staticmethod
     def get_cloudwatch_access_id():
