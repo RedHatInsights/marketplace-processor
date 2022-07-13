@@ -34,7 +34,7 @@ class StatusViewTest(TestCase):
             with patch("api.status.view.check_database_connection", return_value=True):
                 response = self.client.get(url)
                 self.assertEqual(response.status_code, 200)
-                json_result = response.json()
+                # json_result = response.json()
                 # self.assertEqual(json_result["api_version"], 1)
 
     def test_status_endpoint_bad(self):
