@@ -35,7 +35,7 @@ class StatusViewTest(TestCase):
                 response = self.client.get(url)
                 self.assertEqual(response.status_code, 200)
                 json_result = response.json()
-                self.assertEqual(json_result["api_version"], 1)
+                self.assertEqual(json_result["api_version"], (0, 10, 2))
 
     def test_status_endpoint_bad(self):
         """Test the status endpoint when unhealthy."""
