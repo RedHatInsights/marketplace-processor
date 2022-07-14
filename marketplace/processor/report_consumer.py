@@ -89,6 +89,7 @@ def get_consumer():
                 "group.id": "mkt-group",
                 "queued.max.messages.kbytes": 1024,
                 "enable.auto.commit": False,
+                "api_version": (0, 10, 2),
             },
             logger=LOG,
         )
@@ -103,6 +104,7 @@ def get_consumer():
                 "sasl_mechanism": INSIGHTS_KAFKA_SASL_MECH,
                 "sasl_plain_username": INSIGHTS_KAFKA_USERNAME,
                 "sasl_plain_password": INSIGHTS_KAFKA_PASSWORD,
+                "api_version": (0, 10, 2),
             },
             logger=LOG,
         )

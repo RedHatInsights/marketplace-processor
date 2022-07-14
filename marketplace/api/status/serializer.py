@@ -23,7 +23,7 @@ from .model import Status
 class StatusSerializer(serializers.Serializer):  # pylint:disable=abstract-method
     """Serializer for the Status model."""
 
-    api_version = (0, 10, 2)
+    api_version = serializers.IntegerField()
     release_version = serializers.CharField()
     git_commit = serializers.CharField()
     modules = serializers.DictField()
