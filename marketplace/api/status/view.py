@@ -53,6 +53,7 @@ else:
         sasl_mechanism=INSIGHTS_KAFKA_SASL_MECH,
         sasl_plain_username=INSIGHTS_KAFKA_USERNAME,
         sasl_plain_password=INSIGHTS_KAFKA_PASSWORD,
+        api_version=(0, 10, 2),
     )
 
 
