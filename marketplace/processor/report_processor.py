@@ -768,7 +768,11 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
             INSIGHTS_KAFKA_PASSWORD,
         ]:
             self.producer = AIOProducer(
-                {"bootstrap.servers": INSIGHTS_KAFKA_ADDRESS, "message.timeout.ms": 1000,}, loop=REPORT_PROCESSING_LOOP,
+                {
+                    "bootstrap.servers": INSIGHTS_KAFKA_ADDRESS, 
+                    "message.timeout.ms": 1000,
+                }, 
+                loop=REPORT_PROCESSING_LOOP,
             )
         else:
             self.producer = AIOProducer(
