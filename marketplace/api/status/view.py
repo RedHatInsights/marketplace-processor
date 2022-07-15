@@ -18,7 +18,7 @@
 import logging
 import socket
 from http import HTTPStatus
-from sys import api_version
+# from sys import api_version
 
 from django.db import connection
 from django.db import InterfaceError
