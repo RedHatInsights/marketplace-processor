@@ -89,6 +89,7 @@ def get_consumer():
                 "group.id": "mkt-group",
                 "queued.max.messages.kbytes": 1024,
                 "enable.auto.commit": False,
+                "api_version": (0, 10, 2),
             },
             logger=LOG,
         )

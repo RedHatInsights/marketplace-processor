@@ -18,6 +18,7 @@
 import logging
 import socket
 from http import HTTPStatus
+from sys import api_version
 
 from django.db import connection
 from django.db import InterfaceError
@@ -53,6 +54,7 @@ else:
         sasl_mechanism=INSIGHTS_KAFKA_SASL_MECH,
         sasl_plain_username=INSIGHTS_KAFKA_USERNAME,
         sasl_plain_password=INSIGHTS_KAFKA_PASSWORD,
+        api_version=(0,10,2),
     )
 
 
