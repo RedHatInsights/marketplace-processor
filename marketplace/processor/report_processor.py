@@ -769,9 +769,9 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
         ]:
             self.producer = AIOProducer(
                 {
-                    "bootstrap.servers": INSIGHTS_KAFKA_ADDRESS, 
+                    "bootstrap.servers": INSIGHTS_KAFKA_ADDRESS,
                     "message.timeout.ms": 1000,
-                }, 
+                },
                 loop=REPORT_PROCESSING_LOOP,
             )
         else:
