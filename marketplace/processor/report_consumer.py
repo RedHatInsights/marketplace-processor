@@ -147,10 +147,31 @@ class ReportConsumer:
             await self.save_message_and_ack(consumer_record)
             return
 
-    async def save_message_and_ack(self, consumer_record):
+    def extract_from_header(self, headers, header_type):
+        """Retrieve information from Kafka Headers."""
+        LOG.debug(f"[extract_from_header] extracting `{header_type}` from headers: {headers}")
+        if headers is None:
+            return
+        for header in headers:
+            if header_type in header:
+                for item in header:
+                    if item == header_type:
+                        continue
+                    else:
+                        return item.decode("ascii")
+        return
+
+    async def save_message_and_ack(self, consumer_record):  # noqa: C901
         """Save and ack the uploaded kafka message."""
         self.prefix = "SAVING MESSAGE"
         if consumer_record.topic() == MKT_TOPIC:
+            service = self.extract_from_header(consumer_record.headers(), "service")
+            LOG.debug(f"service: {service} | {consumer_record.headers()}")
+            if service != "mkt":
+                LOG.debug("message not for marketplace-proecessor")
+                self.consumer.commit()
+                return
+
             try:
                 missing_fields = []
                 self.upload_message = self.unpack_consumer_record(consumer_record)
@@ -158,7 +179,12 @@ class ReportConsumer:
                 # account is not there
                 rh_account = self.upload_message.get("rh_account")
                 request_id = self.upload_message.get("request_id")
-                self.account_number = self.upload_message.get("account", rh_account)
+                org_id = self.upload_message.get("org_id")
+                if org_id:
+                    org_id = f"org{org_id}"
+                else:
+                    org_id = rh_account
+                self.account_number = self.upload_message.get("account", org_id)
                 if not self.account_number:
                     missing_fields.append("account")
                 if not request_id:
@@ -224,7 +250,12 @@ class ReportConsumer:
             # rh_account is being deprecated so we use it as a backup if
             # account is not there
             rh_account = json_message.get("rh_account")
-            self.account_number = json_message.get("account", rh_account)
+            org_id = json_message.get("org_id")
+            if org_id:
+                org_id = f"org{org_id}"
+            else:
+                org_id = rh_account
+            self.account_number = json_message.get("account", org_id)
             request_id = json_message.get("request_id")
             LOG.info(format_message(self.prefix, message, account_number=self.account_number, request_id=request_id))
             LOG.debug(

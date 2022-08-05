@@ -105,7 +105,7 @@ objects:
     kafkaTopics:
     - replicas: 3
       partitions: 10
-      topicName: platform.upload.mkt
+      topicName: platform.upload.announce
     - replicas: 3
       partitions: 10
       topicName: platform.upload.validation

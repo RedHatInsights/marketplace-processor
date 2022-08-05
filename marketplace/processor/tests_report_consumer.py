@@ -66,6 +66,7 @@ class KafkaMsg:  # pylint:disable=too-few-public-methods
         value_dict = {"url": url, "rh_account": "1234", "request_id": "234332"}
         value_str = json.dumps(value_dict)
         self._value = value_str.encode("utf-8")
+        self._headers = [("service", "mkt".encode())]
 
     def topic(self):
         """Returns topic"""
@@ -74,6 +75,10 @@ class KafkaMsg:  # pylint:disable=too-few-public-methods
     def value(self):
         """Returns value"""
         return self._value
+
+    def headers(self):
+        """Returns value"""
+        return self._headers
 
 
 class KafkaMsgHandlerTest(IsolatedAsyncioTestCase):
