@@ -162,7 +162,7 @@ class EnvConfigurator(Configurator):
     @staticmethod
     def get_kafka_topic():
         """Obtain kafka topic."""
-        return ENVIRONMENT.get_value("INSIGHTS_KAFKA_TOPIC", default="platform.upload.mkt")
+        return ENVIRONMENT.get_value("INSIGHTS_KAFKA_TOPIC", default="platform.upload.announce")
 
     @staticmethod
     def get_kafka_username():
@@ -300,7 +300,7 @@ class ClowderConfigurator(Configurator):
     @staticmethod
     def get_kafka_topic():
         """Obtain kafka topic."""
-        return KafkaTopics.get("platform.upload.mkt").name
+        return KafkaTopics.get("platform.upload.announce").name
 
     @staticmethod
     def get_kafka_username():
