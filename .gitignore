@@ -136,3 +136,8 @@ scripts/config/.upload_env
 
 #sonarqube
 sonarqube/
+
+.scannerwork/
+.bash_history
+
+?/
