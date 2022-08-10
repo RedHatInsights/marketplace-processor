@@ -90,6 +90,7 @@ def get_consumer():
                 "queued.max.messages.kbytes": 1024,
                 "enable.auto.commit": False,
                 "broker.version.fallback": "0.10.2",
+                "api.version.request": False,
             },
             logger=LOG,
         )
@@ -106,6 +107,7 @@ def get_consumer():
                 "sasl.password": INSIGHTS_KAFKA_PASSWORD,
                 "api_version": (0, 10, 2),
                 "broker.version.fallback": "0.10.2",
+                "api.version.request": False,
             },
             logger=LOG,
         )
