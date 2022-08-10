@@ -771,6 +771,7 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
                 {
                     "bootstrap.servers": INSIGHTS_KAFKA_ADDRESS,
                     "message.timeout.ms": 1000,
+                    "broker.version.fallback": "0.10.2",
                 },
                 loop=REPORT_PROCESSING_LOOP,
             )
@@ -779,11 +780,12 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
                 {
                     "bootstrap.servers": INSIGHTS_KAFKA_ADDRESS,
                     "message.timeout.ms": 1000,
-                    "security_protocol": INSIGHTS_KAFKA_SEC_PROT,
-                    "sasl_mechanism": INSIGHTS_KAFKA_SASL_MECH,
-                    "sasl_plain_username": INSIGHTS_KAFKA_USERNAME,
-                    "sasl_plain_password": INSIGHTS_KAFKA_PASSWORD,
+                    "security.protocol": INSIGHTS_KAFKA_SEC_PROT,
+                    "sasl.mechanisms": INSIGHTS_KAFKA_SASL_MECH,
+                    "sasl.username": INSIGHTS_KAFKA_USERNAME,
+                    "sasl.password": INSIGHTS_KAFKA_PASSWORD,
                     "api_version": (0, 10, 2),
+                    "broker.version.fallback": "0.10.2",
                 },
                 loop=REPORT_PROCESSING_LOOP,
             )
