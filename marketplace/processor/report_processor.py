@@ -759,11 +759,11 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
         if self.producer is not None:
             self.producer.close()
 
-        conf =  {
-                    "bootstrap.servers": INSIGHTS_KAFKA_ADDRESS,
-                    "message.timeout.ms": 1000,
-                    "broker.version.fallback": "0.10.2",
-                }
+        conf = {
+            "bootstrap.servers": INSIGHTS_KAFKA_ADDRESS,
+            "message.timeout.ms": 1000,
+            "broker.version.fallback": "0.10.2",
+        }
         if INSIGHTS_KAFKA_SASL:
             conf["security.protocol"] = INSIGHTS_KAFKA_SASL.securityProtocol
             conf["sasl.mechanisms"] = INSIGHTS_KAFKA_SASL.saslMechanism
