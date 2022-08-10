@@ -33,28 +33,25 @@ from rest_framework.response import Response
 from api.status.model import Status
 from api.status.serializer import StatusSerializer
 from config.settings.base import INSIGHTS_KAFKA_HOST
-from config.settings.base import INSIGHTS_KAFKA_PASSWORD
 from config.settings.base import INSIGHTS_KAFKA_PORT
-from config.settings.base import INSIGHTS_KAFKA_SASL_MECH
-from config.settings.base import INSIGHTS_KAFKA_SEC_PROT
-from config.settings.base import INSIGHTS_KAFKA_USERNAME
+from config.settings.base import INSIGHTS_KAFKA_SASL
 from processor.processor_utils import format_message
 
 
 LOG = logging.getLogger(__name__)
-if None in [INSIGHTS_KAFKA_SEC_PROT, INSIGHTS_KAFKA_SASL_MECH, INSIGHTS_KAFKA_USERNAME, INSIGHTS_KAFKA_PASSWORD]:
-    BROKER_CONNECTION = BrokerConnection(INSIGHTS_KAFKA_HOST, int(INSIGHTS_KAFKA_PORT), socket.AF_UNSPEC)
-else:
+if INSIGHTS_KAFKA_SASL:
     BROKER_CONNECTION = BrokerConnection(
         INSIGHTS_KAFKA_HOST,
         int(INSIGHTS_KAFKA_PORT),
         socket.AF_UNSPEC,
-        security_protocol=INSIGHTS_KAFKA_SEC_PROT,
-        sasl_mechanism=INSIGHTS_KAFKA_SASL_MECH,
-        sasl_plain_username=INSIGHTS_KAFKA_USERNAME,
-        sasl_plain_password=INSIGHTS_KAFKA_PASSWORD,
+        security_protocol=INSIGHTS_KAFKA_SASL.securityProtocol,
+        sasl_mechanism=INSIGHTS_KAFKA_SASL.saslMechanism,
+        sasl_plain_username=INSIGHTS_KAFKA_SASL.username,
+        sasl_plain_password=INSIGHTS_KAFKA_SASL.password,
         api_version=(0, 10, 2),
     )
+else:
+    BROKER_CONNECTION = BrokerConnection(INSIGHTS_KAFKA_HOST, int(INSIGHTS_KAFKA_PORT), socket.AF_UNSPEC)
 
 
 def check_kafka_connection():
