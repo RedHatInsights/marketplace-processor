@@ -165,24 +165,9 @@ class EnvConfigurator(Configurator):
         return ENVIRONMENT.get_value("INSIGHTS_KAFKA_TOPIC", default="platform.upload.announce")
 
     @staticmethod
-    def get_kafka_username():
-        """Obtain kafka username."""
-        return ENVIRONMENT.get_value("KAFKA_USER_NAME", default=None)
-
-    @staticmethod
-    def get_kafka_password():
-        """Obtain kafka password."""
-        return ENVIRONMENT.get_value("KAFKA_PASSWORD", default=None)
-
-    @staticmethod
-    def get_kafka_sasl_mechanism():
-        """Obtain kafka sasl mechanism."""
-        return ENVIRONMENT.get_value("KAFKA_SECURITY_PROTOCOL", default=None)
-
-    @staticmethod
-    def get_kafka_security_protocol():
-        """Obtain kafka security protocol."""
-        return ENVIRONMENT.get_value("KAFKA_SASL_MECH", default=None)
+    def get_kafka_sasl():
+        """Obtain kafka sasl"""
+        return {}
 
     @staticmethod
     def get_cloudwatch_access_id():
@@ -303,36 +288,9 @@ class ClowderConfigurator(Configurator):
         return KafkaTopics.get("platform.upload.announce").name
 
     @staticmethod
-    def get_kafka_username():
-        """Obtain kafka username."""
-        if LoadedConfig.kafka.brokers[0].sasl is None:
-            return None
-        else:
-            return LoadedConfig.kafka.brokers[0].sasl.username
-
-    @staticmethod
-    def get_kafka_password():
-        """Obtain kafka password."""
-        if LoadedConfig.kafka.brokers[0].sasl is None:
-            return None
-        else:
-            return LoadedConfig.kafka.brokers[0].sasl.password
-
-    @staticmethod
-    def get_kafka_sasl_mechanism():
-        """Obtain kafka sasl mechanism."""
-        if LoadedConfig.kafka.brokers[0].sasl is None:
-            return None
-        else:
-            return LoadedConfig.kafka.brokers[0].sasl.saslMechanism
-
-    @staticmethod
-    def get_kafka_security_protocol():
-        """Obtain kafka security protocol."""
-        if LoadedConfig.kafka.brokers[0].sasl is None:
-            return None
-        else:
-            return LoadedConfig.kafka.brokers[0].sasl.securityProtocol
+    def get_kafka_sasl():
+        """Obtain kafka sasl"""
+        return getattr(LoadedConfig.kafka.brokers[0], "sasl", None)
 
     @staticmethod
     def get_cloudwatch_access_id():

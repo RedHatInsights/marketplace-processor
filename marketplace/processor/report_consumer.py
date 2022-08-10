@@ -30,11 +30,8 @@ from prometheus_client import Counter
 from api.models import Report
 from api.serializers import ReportSerializer
 from config.settings.base import INSIGHTS_KAFKA_ADDRESS
-from config.settings.base import INSIGHTS_KAFKA_PASSWORD
-from config.settings.base import INSIGHTS_KAFKA_SASL_MECH
-from config.settings.base import INSIGHTS_KAFKA_SEC_PROT
+from config.settings.base import INSIGHTS_KAFKA_SASL
 from config.settings.base import INSIGHTS_KAFKA_TOPIC
-from config.settings.base import INSIGHTS_KAFKA_USERNAME
 from processor.processor_utils import format_message
 from processor.processor_utils import PROCESSOR_INSTANCES
 from processor.processor_utils import stop_all_event_loops
@@ -82,35 +79,25 @@ class KafkaMsgHandlerError(Exception):
 
 def get_consumer():
     """Create a Kafka consumer."""
-    if None in [INSIGHTS_KAFKA_SEC_PROT, INSIGHTS_KAFKA_SASL_MECH, INSIGHTS_KAFKA_USERNAME, INSIGHTS_KAFKA_PASSWORD]:
-        consumer = Consumer(
-            {
-                "bootstrap.servers": INSIGHTS_KAFKA_ADDRESS,
-                "group.id": "mkt-group",
-                "queued.max.messages.kbytes": 1024,
-                "enable.auto.commit": False,
-                "broker.version.fallback": "0.10.2",
-                "api.version.request": False,
-            },
-            logger=LOG,
-        )
-    else:
-        consumer = Consumer(
-            {
-                "bootstrap.servers": INSIGHTS_KAFKA_ADDRESS,
-                "group.id": "mkt-group",
-                "queued.max.messages.kbytes": 1024,
-                "enable.auto.commit": False,
-                "security.protocol": INSIGHTS_KAFKA_SEC_PROT,
-                "sasl.mechanisms": INSIGHTS_KAFKA_SASL_MECH,
-                "sasl.username": INSIGHTS_KAFKA_USERNAME,
-                "sasl.password": INSIGHTS_KAFKA_PASSWORD,
-                "api_version": (0, 10, 2),
-                "broker.version.fallback": "0.10.2",
-                "api.version.request": False,
-            },
-            logger=LOG,
-        )
+
+    conf = {
+        "bootstrap.servers": INSIGHTS_KAFKA_ADDRESS,
+        "group.id": "mkt-group",
+        "queued.max.messages.kbytes": 1024,
+        "enable.auto.commit": False,
+        "broker.version.fallback": "0.10.2",
+        "api.version.request": False,
+    }
+    if INSIGHTS_KAFKA_SASL:
+        conf["security.protocol"] = INSIGHTS_KAFKA_SASL.securityProtocol
+        conf["sasl.mechanisms"] = INSIGHTS_KAFKA_SASL.saslMechanism
+        conf["sasl.username"] = INSIGHTS_KAFKA_SASL.username
+        conf["sasl.password"] = INSIGHTS_KAFKA_SASL.password
+    consumer = Consumer(
+        conf,
+        logger=LOG,
+    )
+    LOG.info(f"Subscribing to topic {MKT_TOPIC} with config {conf}.")
     consumer.subscribe([MKT_TOPIC])
     return consumer
 
