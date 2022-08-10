@@ -89,6 +89,7 @@ def get_consumer():
                 "group.id": "mkt-group",
                 "queued.max.messages.kbytes": 1024,
                 "enable.auto.commit": False,
+                "broker.version.fallback": "0.10.2",
             },
             logger=LOG,
         )
@@ -104,6 +105,7 @@ def get_consumer():
                 "sasl_plain_username": INSIGHTS_KAFKA_USERNAME,
                 "sasl_plain_password": INSIGHTS_KAFKA_PASSWORD,
                 "api_version": (0, 10, 2),
+                "broker.version.fallback": "0.10.2",
             },
             logger=LOG,
         )
@@ -164,14 +166,15 @@ class ReportConsumer:
     async def save_message_and_ack(self, consumer_record):  # noqa: C901
         """Save and ack the uploaded kafka message."""
         self.prefix = "SAVING MESSAGE"
+        LOG.info(f"Incoming message on topic: {consumer_record.topic()} -- {MKT_TOPIC}")
+        LOG.info(f"Incoming message on headers: {consumer_record.headers()}")
         if consumer_record.topic() == MKT_TOPIC:
             service = self.extract_from_header(consumer_record.headers(), "service")
-            LOG.debug(f"service: {service} | {consumer_record.headers()}")
+            LOG.info(f"service: {service} | {consumer_record.headers()}")
             if service != "mkt":
                 LOG.debug("message not for marketplace-proecessor")
                 self.consumer.commit()
                 return
-
             try:
                 missing_fields = []
                 self.upload_message = self.unpack_consumer_record(consumer_record)
@@ -321,6 +324,7 @@ def initialize_upload_report_consumer():  # pragma: no cover
     :param None
     :returns None
     """
+    LOG.info(f"Create consumer loop for topic:{INSIGHTS_KAFKA_TOPIC}.")
     event_loop_thread = threading.Thread(
         target=create_upload_report_consumer_loop, args=(UPLOAD_REPORT_CONSUMER_LOOP,)
     )
