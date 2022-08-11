@@ -283,6 +283,9 @@ INSIGHTS_KAFKA_TOPIC = configurator.get_kafka_topic()
 # Insights Kafka sasl
 INSIGHTS_KAFKA_SASL = configurator.get_kafka_sasl()
 
+# Insights Kafka cacert
+INSIGHTS_KAFKA_CACERT = configurator.get_kafka_cacert()
+
 
 if configurator.is_clowder_enabled():
     # Prometheus setup for Clowder

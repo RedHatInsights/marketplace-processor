@@ -38,6 +38,7 @@ from api.models import Status
 from api.serializers import ReportSerializer
 from api.serializers import ReportSliceSerializer
 from config.settings.base import INSIGHTS_KAFKA_ADDRESS
+from config.settings.base import INSIGHTS_KAFKA_CACERT
 from config.settings.base import INSIGHTS_KAFKA_SASL
 from config.settings.base import RETRIES_ALLOWED
 from config.settings.base import RETRY_TIME
@@ -769,6 +770,8 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
             conf["sasl.mechanisms"] = INSIGHTS_KAFKA_SASL.saslMechanism
             conf["sasl.username"] = INSIGHTS_KAFKA_SASL.username
             conf["sasl.password"] = INSIGHTS_KAFKA_SASL.password
+        if INSIGHTS_KAFKA_CACERT:
+            conf["ssl.ca.location"] = INSIGHTS_KAFKA_CACERT
 
         self.producer = AIOProducer(
             conf,
