@@ -17,6 +17,8 @@
 """
 Handler module for gathering configuration data.
 """
+import tempfile
+
 from app_common_python import isClowderEnabled
 from app_common_python import LoadedConfig
 
@@ -170,6 +172,11 @@ class EnvConfigurator(Configurator):
         return {}
 
     @staticmethod
+    def get_kafka_cacert():
+        """Obtain kafka cacert"""
+        return None
+
+    @staticmethod
     def get_cloudwatch_access_id():
         """Obtain cloudwatch access id."""
         return ENVIRONMENT.get_value("CW_AWS_ACCESS_KEY_ID", default=None)
@@ -286,6 +293,19 @@ class ClowderConfigurator(Configurator):
     def get_kafka_topic():
         """Obtain kafka topic."""
         return KafkaTopics.get("platform.upload.announce").name
+
+    @staticmethod
+    def get_kafka_cacert():
+        """Obtain kafka cacert"""
+        location = None
+        cacert = getattr(LoadedConfig.kafka.brokers[0], "cacert", None)
+        if cacert:
+            tf = tempfile.NamedTemporaryFile(mode="w", delete=False, suffix="pem")
+            tf.write(cacert)
+            tf.flush()
+            tf.close()
+            location = tf.name
+        return location
 
     @staticmethod
     def get_kafka_sasl():

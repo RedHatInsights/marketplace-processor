@@ -30,6 +30,7 @@ from prometheus_client import Counter
 from api.models import Report
 from api.serializers import ReportSerializer
 from config.settings.base import INSIGHTS_KAFKA_ADDRESS
+from config.settings.base import INSIGHTS_KAFKA_CACERT
 from config.settings.base import INSIGHTS_KAFKA_SASL
 from config.settings.base import INSIGHTS_KAFKA_TOPIC
 from processor.processor_utils import format_message
@@ -93,6 +94,8 @@ def get_consumer():
         conf["sasl.mechanisms"] = INSIGHTS_KAFKA_SASL.saslMechanism
         conf["sasl.username"] = INSIGHTS_KAFKA_SASL.username
         conf["sasl.password"] = INSIGHTS_KAFKA_SASL.password
+    if INSIGHTS_KAFKA_CACERT:
+        conf["ssl.ca.location"] = INSIGHTS_KAFKA_CACERT
     consumer = Consumer(
         conf,
         logger=LOG,

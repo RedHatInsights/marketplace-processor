@@ -31,6 +31,7 @@ codecov = "==2.0.17"
 requests-mock = "==1.7.0"
 tox = "==3.20.1"
 pre-commit = ">=2.0"
+crc-bonfire = "*"
 
 [requires]
 python_version = "3.8"
