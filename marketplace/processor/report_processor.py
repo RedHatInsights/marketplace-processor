@@ -764,7 +764,6 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
 
         conf = {
             "bootstrap.servers": INSIGHTS_KAFKA_ADDRESS,
-            "message.timeout.ms": 1000,
             "broker.version.fallback": "0.10.2",
             "message.timeout.ms": KAFKA_MESSAGE_TIMEOUT_MS,
         }
