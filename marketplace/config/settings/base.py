@@ -64,6 +64,9 @@ ARCHIVE_RECORD_RETENTION_PERIOD = ENVIRONMENT.get_value("ARCHIVE_RECORD_RETENTIO
 # the default is set to 1 week
 GARBAGE_COLLECTION_INTERVAL = ENVIRONMENT.get_value("GARBAGE_COLLECTION_INTERVAL", default=604800)
 
+# this is the timeout for Kafka messages
+KAFKA_MESSAGE_TIMEOUT_MS = ENVIRONMENT.get_value("KAFKA_MESSAGE_TIMEOUT_MS", default=600000)
+
 # Logging
 # https://docs.djangoproject.com/en/dev/topics/logging/
 # https://docs.python.org/3.6/library/logging.html
@@ -279,6 +282,9 @@ INSIGHTS_KAFKA_ADDRESS = f"{INSIGHTS_KAFKA_HOST}:{INSIGHTS_KAFKA_PORT}"
 
 # Insights Kafka topic
 INSIGHTS_KAFKA_TOPIC = configurator.get_kafka_topic()
+
+# Insights Kafka topic
+INSIGHTS_KAFKA_VALIDATION_TOPIC = configurator.get_kafka_validation_topic()
 
 # Insights Kafka sasl
 INSIGHTS_KAFKA_SASL = configurator.get_kafka_sasl()

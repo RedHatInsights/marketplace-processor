@@ -57,6 +57,8 @@ objects:
           value: ${CLOWDER_ENABLED}
         - name: ENABLE_CLOUDWATCH_LOGGING
           value: ${ENABLE_CLOUDWATCH_LOGGING}
+        - name: KAFKA_MESSAGE_TIMEOUT_MS
+          value: ${KAFKA_MESSAGE_TIMEOUT_MS}
         resources:
           limits:
             cpu: ${{CPU_LIMIT}}
@@ -114,3 +116,6 @@ parameters:
 - description: Determines if Cloud Watch logging is enabled
   name: ENABLE_CLOUDWATCH_LOGGING
   value: "False"
+- description: Determines timeout value for Kafka messages
+  name: KAFKA_MESSAGE_TIMEOUT_MS
+  value: "600000"

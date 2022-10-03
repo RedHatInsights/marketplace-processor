@@ -40,6 +40,8 @@ from api.serializers import ReportSliceSerializer
 from config.settings.base import INSIGHTS_KAFKA_ADDRESS
 from config.settings.base import INSIGHTS_KAFKA_CACERT
 from config.settings.base import INSIGHTS_KAFKA_SASL
+from config.settings.base import INSIGHTS_KAFKA_VALIDATION_TOPIC
+from config.settings.base import KAFKA_MESSAGE_TIMEOUT_MS
 from config.settings.base import RETRIES_ALLOWED
 from config.settings.base import RETRY_TIME
 from processor.abstract_processor import AbstractProcessor
@@ -60,7 +62,7 @@ from processor.report_consumer import UPLOAD_EXTRACT_FAILS
 from processor.report_consumer import UPLOAD_EXTRACT_RETRIES
 
 LOG = logging.getLogger(__name__)
-VALIDATION_TOPIC = "platform.upload.validation"
+VALIDATION_TOPIC = INSIGHTS_KAFKA_VALIDATION_TOPIC
 SUCCESS_CONFIRM_STATUS = "success"
 FAILURE_CONFIRM_STATUS = "failure"
 RETRIES_ALLOWED = int(RETRIES_ALLOWED)
@@ -764,6 +766,7 @@ class ReportProcessor(AbstractProcessor):  # pylint: disable=too-many-instance-a
             "bootstrap.servers": INSIGHTS_KAFKA_ADDRESS,
             "message.timeout.ms": 1000,
             "broker.version.fallback": "0.10.2",
+            "message.timeout.ms": KAFKA_MESSAGE_TIMEOUT_MS,
         }
         if INSIGHTS_KAFKA_SASL:
             conf["security.protocol"] = INSIGHTS_KAFKA_SASL.securityProtocol

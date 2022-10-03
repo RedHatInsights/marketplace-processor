@@ -33,6 +33,7 @@ from config.settings.base import INSIGHTS_KAFKA_ADDRESS
 from config.settings.base import INSIGHTS_KAFKA_CACERT
 from config.settings.base import INSIGHTS_KAFKA_SASL
 from config.settings.base import INSIGHTS_KAFKA_TOPIC
+from config.settings.base import KAFKA_MESSAGE_TIMEOUT_MS
 from processor.processor_utils import format_message
 from processor.processor_utils import PROCESSOR_INSTANCES
 from processor.processor_utils import stop_all_event_loops
@@ -88,6 +89,7 @@ def get_consumer():
         "enable.auto.commit": False,
         "broker.version.fallback": "0.10.2",
         "api.version.request": False,
+        "message.timeout.ms": KAFKA_MESSAGE_TIMEOUT_MS,
     }
     if INSIGHTS_KAFKA_SASL:
         conf["security.protocol"] = INSIGHTS_KAFKA_SASL.securityProtocol
