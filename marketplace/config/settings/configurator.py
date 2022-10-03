@@ -53,6 +53,11 @@ class Configurator:
         pass
 
     @staticmethod
+    def get_kafka_validation_topic():
+        """Obtain kafka validation topic."""
+        pass
+
+    @staticmethod
     def get_cloudwatch_access_id():
         """Obtain cloudwatch access id."""
         pass
@@ -165,6 +170,11 @@ class EnvConfigurator(Configurator):
     def get_kafka_topic():
         """Obtain kafka topic."""
         return ENVIRONMENT.get_value("INSIGHTS_KAFKA_TOPIC", default="platform.upload.announce")
+
+    @staticmethod
+    def get_kafka_validation_topic():
+        """Obtain kafka validation topic."""
+        return ENVIRONMENT.get_value("INSIGHTS_KAFKA_VALIDATION_TOPIC", default="platform.upload.validation")
 
     @staticmethod
     def get_kafka_sasl():
@@ -293,6 +303,11 @@ class ClowderConfigurator(Configurator):
     def get_kafka_topic():
         """Obtain kafka topic."""
         return KafkaTopics.get("platform.upload.announce").name
+
+    @staticmethod
+    def get_kafka_validation_topic():
+        """Obtain kafka validation topic."""
+        return KafkaTopics.get("platform.upload.validation").name
 
     @staticmethod
     def get_kafka_cacert():
