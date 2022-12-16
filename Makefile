@@ -159,12 +159,6 @@ upload-proxy-data:
 		$(INGRESS_URL) \
 		-u $(RH_USERNAME):$(RH_PASSWORD)
 
-manifest:
-	python scripts/create_manifest.py
-
-check-manifest:
-	./.travis/check_manifest.sh
-
 scan_project:
 	./sonarqube.sh
 
