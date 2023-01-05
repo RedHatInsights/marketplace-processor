@@ -64,8 +64,8 @@ objects:
             cpu: ${{CPU_LIMIT}}
             memory: ${MEMORY_LIMIT}
           requests:
-            cpu: 500m
-            memory: 512Mi
+            cpu: ${{CPU_REQUESTS}}
+            memory: ${MEMORY_REQUESTS}
     objectStore:
     - ${MARKETPLACE_BUCKET}
     kafkaTopics:
@@ -93,9 +93,15 @@ parameters:
   value: "5"
 - name: RETRY_TIME
   value: "480"
+- description: Cpu requests of service
+  name: CPU_REQUESTS
+  value: "150m"
 - description: Cpu limit of service
   name: CPU_LIMIT
   value: "1"
+- description: memory requests of service
+  name: MEMORY_REQUESTS
+  value: 256Mi
 - description: memory limit of service
   name: MEMORY_LIMIT
   value: 1Gi
