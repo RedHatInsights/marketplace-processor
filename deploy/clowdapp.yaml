@@ -79,6 +79,7 @@ objects:
     - ingress
     database:
       name: marketplace
+      version: 12
     testing:
       iqePlugin: marketplace
 
